@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Birthday, Salsu! ❤️</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description"
+    content="A special, interactive digital storybook created just for Salsu's birthday. Open the gift to explore memories, messages, and surprises.">
+  <meta name="keywords" content="happy birthday, digital gift, interactive birthday website, Salsu birthday">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Global Fullscreen Canvas (Stars & Special Effects) -->
+  <canvas id="globalCanvas"></canvas>
+
+  <!-- Audio Element (Synthesized piano fallback or mp3 load) -->
+  <audio id="bgMusic" loop preload="auto">
+    <!-- Users can replace this with their own mp3 file path later -->
+    <source src="assets/music.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Music Controller (Floating Widget) -->
+  <div class="music-control-wrapper" id="musicControl" style="display: none;">
+    <button class="music-btn" aria-label="Toggle Music">
+      <i data-lucide="music"></i>
+    </button>
+    <div class="music-equalizer">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </div>
+  </div>
+
+  <!-- Main Storybook Container -->
+  <main class="story-container">
+
+    <!-- SLIDE 1: Landing Page (The Gift Box) -->
+    <section class="slide active-slide" id="slide-landing">
+      <div class="slide-content glass-card">
+        <div class="gift-container" id="giftBox">
+          <div class="gift-lid">
+            <div class="gift-bow"></div>
+            <div class="gift-lid-ribbon"></div>
+          </div>
+          <div class="gift-box-body">
+            <div class="gift-body-ribbon-v"></div>
+            <div class="gift-body-ribbon-h"></div>
+          </div>
+        </div>
+        <h1 class="landing-title font-serif">A Special Gift for You</h1>
+        <p class="landing-subtitle font-sans">Dear Salsu, someone has sent you a digital package. Click above to open
+          it.</p>
+        <button class="btn-open-gift font-sans" id="btnOpen">
+          <span>Click to Open</span>
+          <i data-lucide="sparkles"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: Dedication Page -->
+    <section class="slide" id="slide-dedication">
+      <div class="slide-content">
+        <span class="pre-title font-sans">To The Prettiest Girl in My World,</span>
+        <h2 class="dedication-name font-serif animate-text">Salsu</h2>
+        <div class="heart-pulse-container">
+          <i data-lucide="heart" class="heart-icon-glowing"></i>
+        </div>
+        <p class="dedication-desc font-sans animate-text-delayed">
+          Hari ini adalah hari istimewa untukmu. Aku membuat halaman ini khusus untuk merayakan kehadiranmu di bumi ini.
+          Mari kita lihat perjalanan kecilmu...
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: On This Earth (Milestone Counter & Calendar) -->
+    <section class="slide" id="slide-milestones">
+      <div class="slide-content large-content">
+        <h2 class="section-title font-serif">On This Earth...</h2>
+        <p class="section-subtitle font-sans">Kamu telah membawa kehangatan dan kebahagiaan ke dunia ini selama:</p>
+
+        <!-- Live Ticking Counters -->
+        <div class="counter-grid font-sans">
+          <div class="counter-card glass-card">
+            <span class="counter-num" id="count-years">00</span>
+            <span class="counter-label">Tahun</span>
+          </div>
+          <div class="counter-card glass-card">
+            <span class="counter-num" id="count-months">00</span>
+            <span class="counter-label">Bulan</span>
+          </div>
+          <div class="counter-card glass-card">
+            <span class="counter-num" id="count-days">00</span>
+            <span class="counter-label">Hari</span>
+          </div>
+          <div class="counter-card glass-card">
+            <span class="counter-num" id="count-hours">00</span>
+            <span class="counter-label">Jam</span>
+          </div>
+          <div class="counter-card glass-card">
+            <span class="counter-num" id="count-mins">00</span>
+            <span class="counter-label">Menit</span>
+          </div>
+          <div class="counter-card glass-card">
+            <span class="counter-num" id="count-secs">00</span>
+            <span class="counter-label">Detik</span>
+          </div>
+        </div>
+
+        <!-- Custom Mini Birthday Calendar Grid -->
+        <div class="calendar-wrapper glass-card">
+          <div class="calendar-header font-serif">
+            <span id="calendar-month-year">Oktober 2004</span>
+          </div>
+          <div class="calendar-days font-sans">
+            <div>S</div>
+            <div>M</div>
+            <div>T</div>
+            <div>W</div>
+            <div>T</div>
+            <div>F</div>
+            <div>S</div>
+          </div>
+          <div class="calendar-grid font-sans" id="calendarGrid">
+            <!-- Dynamically populated by JS -->
+          </div>
+          <p class="calendar-caption font-sans">Hari yang sangat indah saat bintang paling terang lahir. ✨</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: The Birthday Letter (Interactive Envelope) -->
+    <section class="slide" id="slide-letter">
+      <div class="slide-content">
+        <h2 class="section-title font-serif">A Letter For You</h2>
+        <p class="section-subtitle font-sans">Buka amplop di bawah ini untuk membaca surat hangat dariku.</p>
+
+        <div class="envelope-wrapper" id="envelope">
+          <div class="envelope">
+            <div class="flap"></div>
+            <div class="pocket"></div>
+            <div class="letter-mockup"></div>
+            <div class="hearts-emitter"></div>
+          </div>
+        </div>
+        <div class="letter-instruction font-sans" id="letterInstruct">Click the envelope to open</div>
+      </div>
+
+      <!-- Centered letter overlay modal -->
+      <div class="letter-overlay" id="letterOverlay">
+        <div class="letter glass-card-letter" id="letterCard">
+          <button class="close-letter-btn" id="closeLetter" aria-label="Close Letter">&times;</button>
+          <div class="letter-scroll-area">
+            <h3 class="letter-title font-serif">Selamat Ulang Tahun, Salsu</h3>
+            <div class="letter-text font-sans" id="typewriterText"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: Things I Like About You -->
+    <section class="slide" id="slide-traits">
+      <div class="slide-content large-content">
+        <h2 class="section-title font-serif">Things I Like About You</h2>
+        <p class="section-subtitle font-sans">Beberapa alasan kecil mengapa kamu begitu berharga dan dikagumi:</p>
+
+        <div class="traits-grid">
+          <!-- Card 1 -->
+          <div class="trait-card glass-card">
+            <div class="trait-icon"><i data-lucide="smile"></i></div>
+            <h3 class="trait-title font-serif">Senyumanmu</h3>
+            <p class="trait-desc font-sans">Senyum yang bisa mencerahkan hari paling mendung sekalipun dan membawa
+              ketenangan.</p>
+          </div>
+          <!-- Card 2 -->
+          <div class="trait-card glass-card">
+            <div class="trait-icon"><i data-lucide="heart"></i></div>
+            <h3 class="trait-title font-serif">Kebaikan Hatimu</h3>
+            <p class="trait-desc font-sans">Bagaimana kamu selalu peduli, mendengarkan, dan memberikan kehangatan kepada
+              orang di sekitarmu.</p>
+          </div>
+          <!-- Card 3 -->
+          <div class="trait-card glass-card">
+            <div class="trait-icon"><i data-lucide="sparkles"></i></div>
+            <h3 class="trait-title font-serif">Energimu</h3>
+            <p class="trait-desc font-sans">Tawamu yang menular dan pembawaan dirimu yang selalu membuat suasana menjadi
+              lebih hidup.</p>
+          </div>
+          <!-- Card 4 -->
+          <div class="trait-card glass-card">
+            <div class="trait-icon"><i data-lucide="shield"></i></div>
+            <h3 class="trait-title font-serif">Kedewasaanmu</h3>
+            <p class="trait-desc font-sans">Bagaimana kamu menyikapi segala tantangan dengan tenang, dewasa, dan sangat
+              bijaksana.</p>
+          </div>
+          <!-- Card 5 -->
+          <div class="trait-card glass-card">
+            <div class="trait-icon"><i data-lucide="gift"></i></div>
+            <h3 class="trait-title font-serif">Perhatian Kecilmu</h3>
+            <p class="trait-desc font-sans">Hal-hal kecil tentang sekitarmu yang selalu kamu ingat, membuktikan betapa
+              tulusnya dirimu.</p>
+          </div>
+          <!-- Card 6 -->
+          <div class="trait-card glass-card">
+            <div class="trait-icon"><i data-lucide="laugh"></i></div>
+            <h3 class="trait-title font-serif">Sisi Humormu</h3>
+            <p class="trait-desc font-sans">Candaan acak dan tawa lepasmu yang selalu sukses menghapus penat dan membuat
+              hari terasa lebih ringan.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: A Year Of Memories (Cards flip or pop) -->
+    <section class="slide" id="slide-achievements">
+      <div class="slide-content large-content">
+        <h2 class="section-title font-serif">A Year of Memories</h2>
+        <p class="section-subtitle font-sans">Merayakan semua momen, tawa, dan hal-hal luar biasa yang telah kamu lalui
+          tahun ini:</p>
+
+        <div class="memory-cards-container">
+          <div class="memory-card glass-card">
+            <div class="memory-badge font-sans">MOMENTS</div>
+            <h3 class="memory-card-title font-serif">Setiap Detik Bersamamu</h3>
+            <p class="memory-card-desc font-sans">Obrolan larut malam, candaan kecil tak penting, dan perjalanan yang
+              membuat kita semakin dekat.</p>
+          </div>
+          <div class="memory-card glass-card">
+            <div class="memory-badge font-sans">GROWTH</div>
+            <h3 class="memory-card-title font-serif">Menjadi Lebih Hebat</h3>
+            <p class="memory-card-desc font-sans">Melihatmu berjuang melewati tantangan dan tumbuh menjadi pribadi yang
+              semakin dewasa dan bijaksana.</p>
+          </div>
+          <div class="memory-card glass-card">
+            <div class="memory-badge font-sans">HAPPINESS</div>
+            <h3 class="memory-card-title font-serif">Tawa yang Lepas</h3>
+            <p class="memory-card-desc font-sans">Momen-momen di mana kamu tertawa tanpa beban, yang selalu ingin aku
+              jaga selamanya.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: Photo Gallery (Polaroids) -->
+    <section class="slide" id="slide-gallery">
+      <div class="slide-content large-content">
+        <h2 class="section-title font-serif">Captured Moments</h2>
+        <p class="section-subtitle font-sans">Sebagian kecil dari kenangan manis yang terekam dalam waktu:</p>
+
+        <div class="gallery-wrapper">
+          <!-- Polaroid 1 (Photo) -->
+          <div class="polaroid-frame" style="--rotation: -4deg;">
+            <div class="polaroid-img-placeholder">
+              <img src="assets/image/IMG-20240727-WA0020.jpg" alt="Moment 1" onerror="this.style.display='none'">
+              <i data-lucide="camera" class="cam-icon"></i>
+              <span class="placeholder-text">Your Photo 1</span>
+            </div>
+            <div class="polaroid-caption font-serif">Senyuman termanis ✨</div>
+          </div>
+
+          <!-- Polaroid 2 (Photo) -->
+          <div class="polaroid-frame" style="--rotation: 3deg;">
+            <div class="polaroid-img-placeholder">
+              <img src="assets/image/IMG-20241007-WA0007.jpg" alt="Moment 2" onerror="this.style.display='none'">
+              <i data-lucide="camera" class="cam-icon"></i>
+              <span class="placeholder-text">Your Photo 2</span>
+            </div>
+            <div class="polaroid-caption font-serif">Momen tawa gembira ❤️</div>
+          </div>
+
+          <!-- Polaroid 3 (Video Loop) -->
+          <div class="polaroid-frame" style="--rotation: -1deg;">
+            <div class="polaroid-img-placeholder">
+              <video src="assets/image/video.mp4" autoplay loop muted playsinline
+                onerror="this.style.display='none'"></video>
+              <i data-lucide="video" class="cam-icon"></i>
+              <span class="placeholder-text">Your Video 📹</span>
+            </div>
+            <div class="polaroid-caption font-serif">Hari-hari indah 📹</div>
+          </div>
+
+          <!-- Polaroid 4 (Photo) -->
+          <div class="polaroid-frame" style="--rotation: -3deg;">
+            <div class="polaroid-img-placeholder">
+              <img src="assets/image/IMG_20250806_111838_995.jpg" alt="Moment 3" onerror="this.style.display='none'">
+              <i data-lucide="camera" class="cam-icon"></i>
+              <span class="placeholder-text">Your Photo 3</span>
+            </div>
+            <div class="polaroid-caption font-serif">Petualangan seru 🌟</div>
+          </div>
+
+          <!-- Polaroid 5 (Photo) -->
+          <div class="polaroid-frame" style="--rotation: 2deg;">
+            <div class="polaroid-img-placeholder">
+              <img src="assets/image/IMG_20251122_201419_852.jpg" alt="Moment 4" onerror="this.style.display='none'">
+              <i data-lucide="camera" class="cam-icon"></i>
+              <span class="placeholder-text">Your Photo 4</span>
+            </div>
+            <div class="polaroid-caption font-serif">Mimpi & harapan 💫</div>
+          </div>
+
+          <!-- Polaroid 6 (Photo) -->
+          <div class="polaroid-frame" style="--rotation: -2deg;">
+            <div class="polaroid-img-placeholder">
+              <img src="assets/image/MMJ07593.JPG" alt="Moment 5" onerror="this.style.display='none'">
+              <i data-lucide="camera" class="cam-icon"></i>
+              <span class="placeholder-text">Your Photo 5</span>
+            </div>
+            <div class="polaroid-caption font-serif">Kenangan manis 🌸</div>
+          </div>
+        </div>
+        <p class="gallery-info font-sans">Ganti foto placeholder ini dengan file fotomu sendiri di folder assets!</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 8: Blow the Candle (Ending Cake) -->
+    <section class="slide" id="slide-ending">
+      <div class="slide-content">
+        <h2 class="section-title font-serif" id="endingTitle">Make a Wish</h2>
+        <p class="section-subtitle font-sans" id="endingSub">Pejamkan matamu, buat sebuah permohonan, lalu klik lilin
+          untuk meniupnya!</p>
+
+        <!-- Birthday Cake UI -->
+        <div class="cake-container" id="cake">
+          <div class="cake-plate"></div>
+          <div class="cake-body">
+            <div class="cake-cream-layer"></div>
+            <div class="cake-cream-decor"></div>
+            <div class="cake-topping">
+              <div class="strawberry"></div>
+              <div class="strawberry"></div>
+              <div class="strawberry"></div>
+            </div>
+            <div class="candle" id="candle">
+              <div class="candle-stick"></div>
+              <div class="candle-flame" id="flame"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="final-wish font-serif" id="finalMessage" style="display: none;">
+          <h2 class="final-heading">Have The Best Day Ever</h2>
+          <p class="final-sub font-sans">Semoga semua mimpi dan harapanmu terwujud di tahun yang baru ini. Selamat Ulang
+            Tahun, Salsu! 🎉✨❤️</p>
+          <button class="btn-replay font-sans" id="btnReplay">
+            <i data-lucide="rotate-ccw"></i>
+            <span>Mulai Dari Awal</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Navigation Buttons (Fixed Bottom Center/Right) -->
+  <div class="story-navigation" id="storyNav" style="display: none;">
+    <button class="nav-btn btn-prev" aria-label="Previous Slide">
+      <i data-lucide="chevron-left"></i>
+      <span>Back</span>
+    </button>
+
+    <div class="slide-dots" id="slideDots">
+      <!-- Dots injected dynamically -->
+    </div>
+
+    <button class="nav-btn btn-next" aria-label="Next Slide">
+      <span>Next</span>
+      <i data-lucide="chevron-right"></i>
+    </button>
+  </div>
+
+  <!-- Fullscreen Gallery Polaroid Zoom Overlay -->
+  <div class="gallery-overlay" id="galleryOverlay">
+    <button class="close-gallery-btn" id="closeGallery">&times;</button>
+    <div class="glass-card-zoom">
+      <div class="zoom-media-container" id="zoomMediaContainer">
+        <!-- Injected img or video goes here -->
+      </div>
+      <div class="zoom-caption font-serif" id="zoomCaption">
+        <!-- Injected caption goes here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- CDN scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>

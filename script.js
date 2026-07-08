@@ -2245,6 +2245,67 @@ function triggerFlowerPatternsSequence() {
   }, 3500);
 }
 
+function isClickableElement(el) {
+  let current = el;
+  while (current && current !== document.body) {
+    const tagName = current.tagName.toLowerCase();
+    if (['button', 'a', 'input', 'select', 'textarea', 'audio', 'video'].includes(tagName)) {
+      return true;
+    }
+    if (current.getAttribute('role') === 'button' || current.getAttribute('role') === 'link') {
+      return true;
+    }
+    // Check computed cursor style from CSS
+    const style = window.getComputedStyle(current);
+    if (style && style.cursor === 'pointer') {
+      return true;
+    }
+    // Specific check for classes we know are clickable
+    if (current.classList && (
+      current.classList.contains('polaroid-frame') || 
+      current.classList.contains('dot') || 
+      current.classList.contains('gift-container') ||
+      current.classList.contains('envelope') ||
+      current.classList.contains('music-btn') ||
+      current.classList.contains('music-equalizer') ||
+      current.classList.contains('music-control-wrapper') ||
+      current.classList.contains('timeline-bar') ||
+      current.classList.contains('volume-bar') ||
+      current.classList.contains('player-btn') ||
+      current.classList.contains('close-card-btn')
+    )) {
+      return true;
+    }
+    current = current.parentElement;
+  }
+  return false;
+}
+
+function triggerClickExplosion(x, y) {
+  const count = 12;
+  const colors = ["#f472b6", "#fb7185", "#f43f5e", "#ec4899", "#c084fc", "#fff7ed"];
+
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 4 + 1.5;
+    particles.push({
+      x: x,
+      y: y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 0.4,
+      size: Math.random() * 6 + 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      type: "cursor-sparkle",
+      shape: Math.random() < 0.55 ? "heart" : "star",
+      alpha: 1.0,
+      decay: -0.02 - Math.random() * 0.015,
+      drag: 0.96,
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.08
+    });
+  }
+}
+
 // ==========================================================================
 // SYSTEM INITIALIZATION & ADVANCED INTERACTIVE HOVERS
 // ==========================================================================
@@ -2293,6 +2354,13 @@ function init() {
         rotation: Math.random() * Math.PI * 2,
         rotationSpeed: (Math.random() - 0.5) * 0.05
       });
+    }
+  });
+
+  window.addEventListener("click", (e) => {
+    // Only spawn the explosion if click did not land on an interactive/clickable element
+    if (!isClickableElement(e.target)) {
+      triggerClickExplosion(e.clientX, e.clientY);
     }
   });
 

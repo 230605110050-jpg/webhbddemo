@@ -1,4 +1,4 @@
-# Panduan Kustomisasi Website Birthday Gift Salsu ❤️
+# Panduan Kustomisasi Website Birthday Gift ❤️
 
 Website ini dibuat dengan **HTML5, CSS3, dan JavaScript (GSAP & Canvas)** dengan tema *Midnight Navy & Gold* romantis dan interaktif. Halaman berjalan penuh (100vh) per bagian dengan berbagai transisi estetik.
 
@@ -16,11 +16,11 @@ Buka file **[script.js](file:///d:/birthday%20web/script.js)**, lalu edit objek 
 
 ```javascript
 const CONFIG = {
-  recipientName: "Salsu", // Ganti dengan nama panggilan pacar/teman Anda
+  recipientName: "", // Ganti dengan nama panggilan pacar/teman Anda
   birthDate: new Date("2004-10-14T00:00:00"), // Tanggal lahir (Format: YYYY-MM-DD)
   birthMonthIndex: 9, // Bulan lahir (0 = Januari, 9 = Oktober, 11 = Desember)
   birthDay: 14, // Hari ulang tahun
-  letterText: `Hi Salsu,
+  letterText: `Hi ,
   
 Selamat Ulang Tahun yang ke-21!...` // Edit teks surat panjang Anda di sini
 };
@@ -48,7 +48,7 @@ Selamat Ulang Tahun yang ke-21!...` // Edit teks surat panjang Anda di sini
    **Sesudah:**
    ```html
    <div class="polaroid-img-placeholder" id="p1">
-     <img src="assets/photo1.jpg" alt="Foto Pertama Salsu">
+     <img src="assets/photo1.jpg" alt="Foto Pertama ">
      <i data-lucide="camera" class="cam-icon"></i>
      <span class="placeholder-text">Your Photo 1</span>
    </div>

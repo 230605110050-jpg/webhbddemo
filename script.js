@@ -126,6 +126,7 @@ function navigateToSlide(targetIndex) {
         scale: 0.95,
         filter: "blur(10px)"
       });
+
       targetEl.classList.add("active-slide");
 
       // Fade in target slide
@@ -240,14 +241,236 @@ function handleSwipe() {
 // ==========================================================================
 // BACKGROUND MUSIC WITH PROCEDURAL SYNTHESIZER FALLBACK
 // ==========================================================================
+// SPOTIFY-STYLE MUSIC WIDGET CONTROLLER
+// ==========================================================================
+// ==========================================================================
+// LANDSCAPE MUSIC WIDGET CONTROLLER (Matches User Screenshot)
+// ==========================================================================
+// ==========================================================================
+// LANDSCAPE MUSIC WIDGET CONTROLLER (Matches User Screenshot)
+// ==========================================================================
 let audioContext = null;
 let musicPlaying = false;
 let syntheticMusicInterval = null;
 const audioEl = document.getElementById("bgMusic");
-const musicControl = document.getElementById("musicControl");
 
-// Initialize Music Control Widget Click
-musicControl.addEventListener("click", toggleMusic);
+// DOM Elements
+const musicControl = document.getElementById("musicControl");
+const landscapePlayerCard = document.getElementById("landscapePlayerCard");
+const closePlayerCard = document.getElementById("closePlayerCard");
+const btnPlayPauseCard = document.getElementById("btnPlayPauseCard");
+const btnPrevTrack = document.getElementById("btnPrevTrack");
+const btnNextTrack = document.getElementById("btnNextTrack");
+
+const timelineProgress = document.getElementById("timelineProgress");
+const timelineHandle = document.getElementById("timelineHandle");
+const timelineBar = document.getElementById("timelineBar");
+const timeCurrent = document.getElementById("timeCurrent");
+const timeDuration = document.getElementById("timeDuration");
+
+const volumeProgress = document.getElementById("volumeProgress");
+const volumeHandle = document.getElementById("volumeHandle");
+const volumeBar = document.getElementById("volumeBar");
+
+// Music Player Playlist
+const playlist = [
+  {
+    title: "Salsu's Special Theme",
+    artist: "Happy Birthday Cantika",
+    source: "assets/music.mp3",
+    isMp3: true,
+    color: "linear-gradient(135deg, var(--gold) 0%, #f472b6 100%)"
+  },
+  {
+    title: "Midnight Lullaby",
+    artist: "Synthesized Harmony",
+    source: "synth-lullaby",
+    isMp3: false,
+    color: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)"
+  },
+  {
+    title: "Starlight Waltz",
+    artist: "Synthesized Dream",
+    source: "synth-waltz",
+    isMp3: false,
+    color: "linear-gradient(135deg, #10b981 0%, #06b6d4 100%)"
+  }
+];
+
+let currentTrackIndex = 0;
+let globalVolume = 0.8;
+
+// Synth timer variables
+let synthSeconds = 0;
+let synthTimer = null;
+const synthDuration = 134; // 2:14 simulated duration
+
+function formatTime(seconds) {
+  if (isNaN(seconds)) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Slider Draggable Utility Function
+function makeSliderDraggable(barElement, progressElement, handleElement, callback) {
+  if (!barElement) return;
+  let isDragging = false;
+
+  function updateValue(clientX) {
+    const rect = barElement.getBoundingClientRect();
+    let pct = (clientX - rect.left) / rect.width;
+    if (pct < 0) pct = 0;
+    if (pct > 1) pct = 1;
+    progressElement.style.width = `${pct * 100}%`;
+    if (handleElement) {
+      handleElement.style.left = `${pct * 100}%`;
+    }
+    callback(pct);
+  }
+
+  barElement.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    updateValue(e.clientX);
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  });
+
+  function onMouseMove(e) {
+    if (!isDragging) return;
+    updateValue(e.clientX);
+  }
+
+  function onMouseUp() {
+    isDragging = false;
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+  }
+
+  barElement.addEventListener("touchstart", (e) => {
+    isDragging = true;
+    updateValue(e.touches[0].clientX);
+    document.addEventListener("touchmove", onTouchMove);
+    document.addEventListener("touchend", onTouchEnd);
+  }, { passive: true });
+
+  function onTouchMove(e) {
+    if (!isDragging) return;
+    updateValue(e.touches[0].clientX);
+  }
+
+  function onTouchEnd() {
+    isDragging = false;
+    document.removeEventListener("touchmove", onTouchMove);
+    document.removeEventListener("touchend", onTouchEnd);
+  }
+}
+
+// 1. Toggle Player Card on Compact Pill Click
+musicControl.addEventListener("click", () => {
+  const isActive = landscapePlayerCard.classList.contains("active");
+  if (isActive) {
+    landscapePlayerCard.classList.remove("active");
+    SFX.playWhoosh();
+  } else {
+    landscapePlayerCard.classList.add("active");
+    SFX.playPop();
+  }
+});
+
+// 2. Close Player Card on card cross click
+closePlayerCard.addEventListener("click", (e) => {
+  e.stopPropagation();
+  landscapePlayerCard.classList.remove("active");
+  SFX.playWhoosh();
+});
+
+// 3. Play/Pause toggle inside Card
+btnPlayPauseCard.addEventListener("click", (e) => {
+  e.stopPropagation();
+  toggleMusic();
+});
+
+// 4. Track Change Navigation Buttons
+if (btnPrevTrack) {
+  btnPrevTrack.addEventListener("click", (e) => {
+    e.stopPropagation();
+    SFX.playPop();
+    loadTrack(currentTrackIndex - 1);
+  });
+}
+
+if (btnNextTrack) {
+  btnNextTrack.addEventListener("click", (e) => {
+    e.stopPropagation();
+    SFX.playPop();
+    loadTrack(currentTrackIndex + 1);
+  });
+}
+
+// 5. Volume Slider Drag & click Control
+makeSliderDraggable(volumeBar, volumeProgress, volumeHandle, (pct) => {
+  audioEl.volume = pct;
+  globalVolume = pct;
+});
+
+// 6. Timeline Slider Drag & click control
+makeSliderDraggable(timelineBar, timelineProgress, timelineHandle, (pct) => {
+  const track = playlist[currentTrackIndex];
+  if (track.isMp3 && audioEl.duration) {
+    audioEl.currentTime = pct * audioEl.duration;
+  } else {
+    synthSeconds = Math.floor(pct * synthDuration);
+    timeCurrent.textContent = formatTime(synthSeconds);
+  }
+});
+
+// 7. Normal MP3 Progress Bar update
+audioEl.addEventListener("timeupdate", () => {
+  const track = playlist[currentTrackIndex];
+  if (musicPlaying && track.isMp3 && audioEl.duration) {
+    const cur = audioEl.currentTime;
+    const dur = audioEl.duration;
+    timeCurrent.textContent = formatTime(cur);
+    timeDuration.textContent = formatTime(dur);
+    const pct = (cur / dur) * 100;
+    timelineProgress.style.width = `${pct}%`;
+    timelineHandle.style.left = `${pct}%`;
+  }
+});
+
+audioEl.addEventListener("loadedmetadata", () => {
+  const track = playlist[currentTrackIndex];
+  if (track.isMp3 && audioEl.duration) {
+    timeDuration.textContent = formatTime(audioEl.duration);
+  }
+});
+
+function startSynthTimer() {
+  if (synthTimer) clearInterval(synthTimer);
+  timeDuration.textContent = formatTime(synthDuration);
+  synthTimer = setInterval(() => {
+    const track = playlist[currentTrackIndex];
+    if (musicPlaying && !track.isMp3) {
+      synthSeconds++;
+      if (synthSeconds > synthDuration) {
+        synthSeconds = 0;
+      }
+      timeCurrent.textContent = formatTime(synthSeconds);
+      const pct = (synthSeconds / synthDuration) * 100;
+      timelineProgress.style.width = `${pct}%`;
+      timelineHandle.style.left = `${pct}%`;
+    }
+  }, 1000);
+}
+
+function stopSynthTimer() {
+  if (synthTimer) {
+    clearInterval(synthTimer);
+    synthTimer = null;
+  }
+  synthSeconds = 0;
+}
 
 function toggleMusic() {
   if (musicPlaying) {
@@ -257,37 +480,91 @@ function toggleMusic() {
   }
 }
 
+function loadTrack(index) {
+  currentTrackIndex = (index + playlist.length) % playlist.length;
+  const track = playlist[currentTrackIndex];
+
+  document.querySelector(".track-title").textContent = track.title;
+  document.querySelector(".track-artist").textContent = track.artist;
+
+  const vinylCenter = document.querySelector(".vinyl-center");
+  if (vinylCenter) {
+    vinylCenter.style.background = track.color;
+  }
+
+  audioEl.pause();
+  stopSyntheticPiano();
+  stopSynthTimer();
+
+  timelineProgress.style.width = "0%";
+  timelineHandle.style.left = "0%";
+  timeCurrent.textContent = "0:00";
+
+  if (musicPlaying) {
+    startTrackPlayback(track);
+  }
+}
+
+function startTrackPlayback(track) {
+  if (track.isMp3) {
+    audioEl.play().then(() => {
+      btnPlayPauseCard.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect width="4" height="16" x="14" y="4" rx="1"/><rect width="4" height="16" x="6" y="4" rx="1"/></svg>`;
+      const compactBtn = musicControl.querySelector(".music-btn");
+      if (compactBtn) {
+        compactBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-volume-2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
+      }
+      if (audioEl.duration) {
+        timeDuration.textContent = formatTime(audioEl.duration);
+      }
+    }).catch((err) => {
+      console.log("MP3 play failed, falling back to synth...", err);
+      startSyntheticPiano(track.source);
+      startSynthTimer();
+      btnPlayPauseCard.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect width="4" height="16" x="14" y="4" rx="1"/><rect width="4" height="16" x="6" y="4" rx="1"/></svg>`;
+      const compactBtn = musicControl.querySelector(".music-btn");
+      if (compactBtn) {
+        compactBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-volume-2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
+      }
+    });
+  } else {
+    startSyntheticPiano(track.source);
+    startSynthTimer();
+    btnPlayPauseCard.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect width="4" height="16" x="14" y="4" rx="1"/><rect width="4" height="16" x="6" y="4" rx="1"/></svg>`;
+    const compactBtn = musicControl.querySelector(".music-btn");
+    if (compactBtn) {
+      compactBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-volume-2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
+    }
+  }
+}
+
 function playMusic() {
   musicPlaying = true;
   musicControl.classList.add("playing");
+  landscapePlayerCard.classList.add("playing");
 
-  // Warm up SFX AudioContext on user interaction
   SFX.init();
 
-  // Try normal MP3 audio element first
-  audioEl.play().then(() => {
-    // Successfully playing MP3
-    musicControl.querySelector("i").setAttribute("data-lucide", "volume-2");
-    lucide.createIcons();
-  }).catch((err) => {
-    // If MP3 is missing, blocked, or has issues, fallback to Synth melody!
-    console.log("Audio file play blocked or failed. Activating procedural synthesizer...", err);
-    startSyntheticPiano();
-  });
+  const track = playlist[currentTrackIndex];
+  startTrackPlayback(track);
 }
 
 function pauseMusic() {
   musicPlaying = false;
   musicControl.classList.remove("playing");
+  landscapePlayerCard.classList.remove("playing");
   audioEl.pause();
   stopSyntheticPiano();
+  stopSynthTimer();
 
-  musicControl.querySelector("i").setAttribute("data-lucide", "volume-x");
-  lucide.createIcons();
+  btnPlayPauseCard.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"/></svg>`;
+  const compactBtn = musicControl.querySelector(".music-btn");
+  if (compactBtn) {
+    compactBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-volume-x"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>`;
+  }
 }
 
 // Procedural Synthesizer: Creates beautiful soft piano-like chords and ambient melodies
-function startSyntheticPiano() {
+function startSyntheticPiano(trackType) {
   if (syntheticMusicInterval) return; // Already running
 
   if (!audioContext) {
@@ -298,20 +575,42 @@ function startSyntheticPiano() {
     audioContext.resume();
   }
 
-  musicControl.querySelector("i").setAttribute("data-lucide", "music");
-  lucide.createIcons();
-
-  // Simple melody notes: Cmaj9 chord notes, Am, F, G (Lullaby-like ambient feel)
-  const chordNotes = [
+  // Set progressions based on track type
+  let chordNotes = [
     [130.81, 164.81, 196.00, 246.94], // Cmaj7 (C3, E3, G3, B3)
     [110.00, 130.81, 164.81, 220.00], // Am (A2, C3, E3, A3)
     [87.31, 130.81, 174.61, 220.00],  // F (F2, C3, F3, A3)
     [98.00, 146.83, 196.00, 246.94]   // G (G2, D3, G3, B3)
   ];
 
-  const melodyNotes = [
+  let melodyNotes = [
     261.63, 293.66, 329.63, 392.00, 440.00, 523.25 // C4, D4, E4, G4, A4, C5 (Pentatonic Scale)
   ];
+
+  let tempo = 1500; // default beat rate
+
+  if (trackType === "synth-lullaby") {
+    chordNotes = [
+      [110.00, 146.83, 174.61, 220.00], // Dm (D2, D3, F3, A3)
+      [82.41, 130.81, 164.81, 196.00],  // Em (E2, C3, E3, G3)
+      [87.31, 130.81, 174.61, 220.00],  // F (F2, C3, F3, A3)
+      [110.00, 164.81, 196.00, 246.94]  // Esus4 (A2, E3, G3, B3)
+    ];
+    melodyNotes = [
+      220.00, 246.94, 261.63, 329.63, 392.00, 440.00
+    ];
+    tempo = 1800; // slower lullaby tempo
+  } else if (trackType === "synth-waltz") {
+    chordNotes = [
+      [130.81, 196.00, 261.63, 329.63], // C major waltz base
+      [87.31, 174.61, 261.63, 349.23],  // F major waltz base
+      [98.00, 196.00, 293.66, 392.00]   // G major waltz base
+    ];
+    melodyNotes = [
+      261.63, 329.63, 392.00, 523.25
+    ];
+    tempo = 1000; // waltz waltz waltz
+  }
 
   let beat = 0;
 
@@ -320,13 +619,17 @@ function startSyntheticPiano() {
 
     const time = audioContext.currentTime;
 
+    // Scale gains by global volume
+    const chordVol = 0.04 * globalVolume;
+    const melodyVol = 0.06 * globalVolume;
+
     // Play Chords (every 4 beats)
     if (beat % 4 === 0) {
       const chordIndex = Math.floor(beat / 4) % chordNotes.length;
       const currentChord = chordNotes[chordIndex];
 
       currentChord.forEach((freq) => {
-        // Soft synth voice (sine + lowpass filter)
+        // Soft synth voice (triangle wave + lowpass filter)
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
         const filter = audioContext.createBiquadFilter();
@@ -335,11 +638,11 @@ function startSyntheticPiano() {
         osc.frequency.setValueAtTime(freq, time);
 
         filter.type = "lowpass";
-        filter.frequency.setValueAtTime(450, time); // warm low tones
+        filter.frequency.setValueAtTime(450, time);
 
         gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(0.04, time + 0.8);
-        gain.gain.exponentialRampToValueAtTime(0.0001, time + 3.8); // Long release
+        gain.gain.linearRampToValueAtTime(chordVol, time + 0.8);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + 3.8);
 
         osc.connect(filter);
         filter.connect(gain);
@@ -363,17 +666,16 @@ function startSyntheticPiano() {
       osc.frequency.setValueAtTime(noteFreq, time);
 
       gain.gain.setValueAtTime(0, time);
-      gain.gain.linearRampToValueAtTime(0.06, time + 0.05); // quick attack
-      gain.gain.exponentialRampToValueAtTime(0.0001, time + 1.8); // decay
+      gain.gain.linearRampToValueAtTime(melodyVol, time + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + 1.8);
 
-      // Delay effect for spacey vibe
+      // Spacey delay loop feedback
       delay.delayTime.value = 0.35;
       feedback.gain.value = 0.4;
 
       osc.connect(gain);
       gain.connect(audioContext.destination);
 
-      // Feed delay loop
       gain.connect(delay);
       delay.connect(feedback);
       feedback.connect(delay);
@@ -386,9 +688,8 @@ function startSyntheticPiano() {
     beat++;
   }
 
-  // Set ticking interval (beat every 1.5 seconds)
   playSynthBeat();
-  syntheticMusicInterval = setInterval(playSynthBeat, 1500);
+  syntheticMusicInterval = setInterval(playSynthBeat, tempo);
 }
 
 function stopSyntheticPiano() {
@@ -642,6 +943,7 @@ const ctx = canvas.getContext("2d");
 
 let stars = [];
 let particles = [];
+let shootingStars = [];
 let mode = "stars"; // 'stars', 'burst', 'fireworks'
 
 function resizeCanvas() {
@@ -654,16 +956,52 @@ window.addEventListener("resize", resizeCanvas);
 // Init Starfield
 function initStars() {
   stars = [];
-  const starCount = Math.floor((canvas.width * canvas.height) / 8000);
+  const starCount = Math.floor((canvas.width * canvas.height) / 7000);
+  
+  const starColors = [
+    "rgba(255, 255, 255, ",   // Pure white
+    "rgba(254, 240, 138, ",   // Soft yellow
+    "rgba(244, 114, 182, ",   // Soft pink
+    "rgba(192, 132, 252, ",   // Soft purple
+    "rgba(56, 189, 248, ",    // Soft blue
+    "rgba(167, 243, 208, ",   // Soft green
+    "rgba(253, 186, 116, "    // Soft orange
+  ];
+
   for (let i = 0; i < starCount; i++) {
+    const rand = Math.random();
+    let shape = "circle";
+    let baseSize = Math.random() * 1.5 + 0.5;
+
+    if (rand < 0.55) {
+      shape = "circle";
+      baseSize = Math.random() * 1.5 + 0.5;
+    } else if (rand < 0.75) {
+      shape = "sparkle4";
+      baseSize = Math.random() * 1.8 + 1.0;
+    } else if (rand < 0.90) {
+      shape = "cross";
+      baseSize = Math.random() * 2.0 + 0.8;
+    } else {
+      shape = "star5";
+      baseSize = Math.random() * 1.8 + 1.0;
+    }
+
+    const colorIndex = Math.random() < 0.5 ? 0 : Math.floor(Math.random() * (starColors.length - 1)) + 1;
+    const color = starColors[colorIndex];
+
     stars.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() * 1.5 + 0.5,
-      alpha: Math.random(),
-      twinkleSpeed: Math.random() * 0.02 + 0.005,
-      driftX: (Math.random() - 0.5) * 0.1,
-      driftY: (Math.random() - 0.5) * 0.05
+      size: baseSize,
+      alpha: Math.random() * 0.8 + 0.2,
+      twinkleSpeed: Math.random() * 0.015 + 0.005,
+      driftX: (Math.random() - 0.5) * 0.08,
+      driftY: (Math.random() - 0.5) * 0.04,
+      shape: shape,
+      color: color,
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.015
     });
   }
 }
@@ -688,11 +1026,119 @@ function animateCanvas() {
     if (star.y < 0) star.y = canvas.height;
     if (star.y > canvas.height) star.y = 0;
 
-    ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
-    ctx.beginPath();
-    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-    ctx.fill();
+    const colorStr = star.color + star.alpha + ")";
+    ctx.fillStyle = colorStr;
+
+    if (star.shape === "circle") {
+      ctx.beginPath();
+      ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (star.shape === "sparkle4") {
+      star.rotation += star.rotationSpeed;
+      ctx.save();
+      ctx.translate(star.x, star.y);
+      ctx.rotate(star.rotation);
+      ctx.beginPath();
+      const r = star.size * 2.2;
+      const innerR = r * 0.25;
+      for (let i = 0; i < 4; i++) {
+        ctx.lineTo(0, -r);
+        ctx.lineTo(innerR, -innerR);
+        ctx.rotate(Math.PI / 2);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    } else if (star.shape === "star5") {
+      star.rotation += star.rotationSpeed;
+      ctx.save();
+      ctx.translate(star.x, star.y);
+      ctx.rotate(star.rotation);
+      ctx.beginPath();
+      const r = star.size * 2.0;
+      const innerR = r * 0.382;
+      for (let i = 0; i < 5; i++) {
+        ctx.lineTo(0, -r);
+        ctx.rotate(Math.PI / 5);
+        ctx.lineTo(0, -innerR);
+        ctx.rotate(Math.PI / 5);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    } else if (star.shape === "cross") {
+      star.rotation += star.rotationSpeed;
+      ctx.save();
+      ctx.translate(star.x, star.y);
+      ctx.rotate(star.rotation);
+      ctx.strokeStyle = colorStr;
+      ctx.lineWidth = star.size * 0.35;
+      ctx.beginPath();
+      const r = star.size * 2.4;
+      ctx.moveTo(-r, 0);
+      ctx.lineTo(r, 0);
+      ctx.moveTo(0, -r);
+      ctx.lineTo(0, r);
+      ctx.stroke();
+      ctx.restore();
+    }
   });
+
+  // 1.5. Draw & Update Shooting Stars
+  if (Math.random() < 0.0035 && shootingStars.length < 3) {
+    const starColors = [
+      "rgba(255, 255, 255, ",   // Pure white
+      "rgba(254, 240, 138, ",   // Soft yellow
+      "rgba(244, 114, 182, ",   // Soft pink
+      "rgba(192, 132, 252, ",   // Soft purple
+      "rgba(56, 189, 248, ",    // Soft blue
+      "rgba(253, 186, 116, "    // Soft orange
+    ];
+    const color = starColors[Math.floor(Math.random() * starColors.length)];
+    shootingStars.push({
+      x: Math.random() * (canvas.width + 300) - 100,
+      y: Math.random() * (canvas.height * 0.35),
+      vx: -Math.random() * 8 - 7,
+      vy: Math.random() * 6 + 5,
+      length: Math.random() * 12 + 8,
+      width: Math.random() * 1.5 + 1.0,
+      alpha: 1.0,
+      decay: Math.random() * 0.015 + 0.012,
+      color: color
+    });
+  }
+
+  for (let i = shootingStars.length - 1; i >= 0; i--) {
+    const s = shootingStars[i];
+    s.x += s.vx;
+    s.y += s.vy;
+    s.alpha -= s.decay;
+
+    if (s.alpha <= 0 || s.x < -100 || s.y > canvas.height + 100) {
+      shootingStars.splice(i, 1);
+      continue;
+    }
+
+    const grad = ctx.createLinearGradient(
+      s.x,
+      s.y,
+      s.x - s.vx * s.length,
+      s.y - s.vy * s.length
+    );
+    grad.addColorStop(0, `rgba(255, 255, 255, ${s.alpha})`);
+    grad.addColorStop(0.2, s.color + s.alpha * 0.75 + ")");
+    grad.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+    ctx.save();
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = s.width;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y);
+    ctx.lineTo(s.x - s.vx * s.length, s.y - s.vy * s.length);
+    ctx.stroke();
+    ctx.restore();
+  }
 
   // 2. Draw Flower Burst / Fireworks Particles
   if (particles.length > 0) {
@@ -860,6 +1306,35 @@ function triggerFlowerExplosion(sourceX, sourceY) {
       alpha: 1.0,
       decay: Math.random() * -0.015 - 0.01,
       drag: 0.95
+    });
+  }
+}
+
+// Generate Heart Explosion on clicking red heart
+function triggerHeartExplosion(sourceX, sourceY) {
+  const heartCount = 75;
+  const heartColors = ["#ef4444", "#f43f5e", "#ec4899", "#d946ef", "#db2777", "#e11d48", "#ff0844", "#ff4e50"];
+
+  for (let i = 0; i < heartCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 14 + 4;
+    const size = Math.random() * 22 + 10; // random sizes 10px to 32px
+
+    particles.push({
+      x: sourceX,
+      y: sourceY,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 2.5, // upward vector boost
+      size: size,
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.12,
+      type: "cursor-sparkle",
+      shape: "heart",
+      color: heartColors[Math.floor(Math.random() * heartColors.length)],
+      alpha: 1.0,
+      decay: -0.015 - Math.random() * 0.01,
+      drag: 0.96,
+      gravity: 0.05 + Math.random() * 0.05
     });
   }
 }
@@ -1415,8 +1890,31 @@ function init() {
   resizeCanvas();
   animateCanvas();
 
+  // Set audio element volume to 80% to match UI slider starting state
+  audioEl.volume = 0.8;
+
   // Load SVG Icons
   lucide.createIcons();
+
+  // Wire up clicking red heart on slide 2 to trigger heart explosions
+  const heartIcon = document.querySelector(".heart-icon-glowing");
+  if (heartIcon) {
+    heartIcon.style.cursor = "pointer";
+    heartIcon.addEventListener("click", (e) => {
+      e.stopPropagation();
+      SFX.playPop();
+      const rect = heartIcon.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      triggerHeartExplosion(x, y);
+
+      // Cute heart GSAP pulse animation
+      gsap.fromTo(heartIcon,
+        { scale: 1 },
+        { scale: 1.4, duration: 0.12, yoyo: true, repeat: 1, ease: "power1.out" }
+      );
+    });
+  }
 
   // Set landing page visible by default
   gsap.set("#slide-landing", { autoAlpha: 1 });

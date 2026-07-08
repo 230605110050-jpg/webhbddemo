@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Dancing+Script:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap"
     rel="stylesheet">
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css">
@@ -30,9 +30,9 @@
     <source src="assets/music.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Music Controller (Floating Widget) -->
+  <!-- Floating Music Control Trigger (Original Pill Design) -->
   <div class="music-control-wrapper" id="musicControl" style="display: none;">
-    <button class="music-btn" aria-label="Toggle Music">
+    <button class="music-btn" aria-label="Toggle Music Player">
       <i data-lucide="music"></i>
     </button>
     <div class="music-equalizer">
@@ -40,6 +40,71 @@
       <span class="bar"></span>
       <span class="bar"></span>
       <span class="bar"></span>
+    </div>
+  </div>
+
+  <!-- Landscape Music Player Card (Matches User Screenshot) -->
+  <div class="landscape-player-card" id="landscapePlayerCard">
+    <button class="close-card-btn" id="closePlayerCard" aria-label="Close Player">&times;</button>
+
+    <!-- Left Section: Rotating Vinyl Disc -->
+    <div class="player-left">
+      <div class="vinyl-square-box">
+        <div class="vinyl-disc-shadow"></div>
+        <div class="vinyl-disc" id="vinylDisc">
+          <div class="vinyl-groove"></div>
+          <div class="vinyl-center">
+            <div class="vinyl-center-hole"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Section: Song Details, Progress, Controls, Volume -->
+    <div class="player-right">
+      <!-- Song Header Details -->
+      <div class="track-header">
+        <div class="track-details">
+          <h4 class="track-title font-sans">Salsu's Special Theme</h4>
+          <p class="track-artist font-sans">Happy Birthday Cantika</p>
+        </div>
+        <i data-lucide="radio" class="track-status-icon"></i>
+      </div>
+
+      <!-- Progress Timeline Slider -->
+      <div class="player-timeline">
+        <div class="timeline-bar" id="timelineBar">
+          <div class="timeline-progress" id="timelineProgress"></div>
+          <div class="timeline-handle" id="timelineHandle"></div>
+        </div>
+        <div class="timeline-times">
+          <span class="time-current" id="timeCurrent">0:00</span>
+          <span class="time-duration" id="timeDuration">0:00</span>
+        </div>
+      </div>
+
+      <!-- Action Navigation Buttons -->
+      <div class="player-buttons">
+        <button class="player-btn btn-prev-track" id="btnPrevTrack" aria-label="Previous Track">
+          <i data-lucide="skip-back"></i>
+        </button>
+        <button class="player-btn btn-play-pause-card" id="btnPlayPauseCard" aria-label="Play/Pause">
+          <i data-lucide="play" id="cardPlayIcon"></i>
+        </button>
+        <button class="player-btn btn-next-track" id="btnNextTrack" aria-label="Next Track">
+          <i data-lucide="skip-forward"></i>
+        </button>
+      </div>
+
+      <!-- Volume Bar Control -->
+      <div class="player-volume">
+        <i data-lucide="volume" class="vol-icon"></i>
+        <div class="volume-bar" id="volumeBar">
+          <div class="volume-progress" id="volumeProgress"></div>
+          <div class="volume-handle" id="volumeHandle"></div>
+        </div>
+        <i data-lucide="volume-2" class="vol-icon"></i>
+      </div>
     </div>
   </div>
 
@@ -262,7 +327,7 @@
           <!-- Polaroid 1 (Photo) -->
           <div class="polaroid-frame" style="--rotation: -4deg;">
             <div class="polaroid-img-placeholder">
-              <img src="assets/image/IMG-20240727-WA0020.jpg" alt="Moment 1" onerror="this.style.display='none'">
+              <img src="assets/image/IMG-20240410-WA0054.jpg" alt="Moment 1" onerror="this.style.display='none'">
               <i data-lucide="camera" class="cam-icon"></i>
               <span class="placeholder-text">Your Photo 1</span>
             </div>

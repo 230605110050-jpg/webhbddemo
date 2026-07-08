@@ -51,6 +51,9 @@ html, body {
 /* ==========================================================================
    MUSIC WIDGET (FLOATING EQUALIZER)
    ========================================================================== */
+/* ==========================================================================
+   ORIGINAL PILL MUSIC BUTTON
+   ========================================================================== */
 .music-control-wrapper {
   position: fixed;
   top: 24px;
@@ -63,6 +66,7 @@ html, body {
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 8px 16px;
   border-radius: 30px;
   cursor: pointer;
@@ -101,7 +105,7 @@ html, body {
   transition: height 0.2s ease;
 }
 
-/* Music Playing Animation */
+/* Equalizer dance animation when playing */
 .music-control-wrapper.playing .music-equalizer .bar {
   animation: equalize 1.2s ease-in-out infinite alternate;
 }
@@ -115,6 +119,392 @@ html, body {
   0% { height: 4px; }
   100% { height: 16px; }
 }
+
+/* ==========================================================================
+   LANDSCAPE PLAYER CARD (Spotify/iOS Style)
+   ========================================================================== */
+.landscape-player-card {
+  position: fixed;
+  top: 84px;
+  right: 24px;
+  width: 380px;
+  height: 184px;
+  background: rgba(18, 18, 22, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  padding: 16px;
+  gap: 16px;
+  z-index: 99;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+  transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.landscape-player-card.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* Card Close Button */
+.close-card-btn {
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1.4rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s;
+  z-index: 10;
+}
+
+.close-card-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Player Left Section (Vinyl box) */
+.player-left {
+  flex: 0 0 148px;
+  height: 148px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vinyl-square-box {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.vinyl-disc-shadow {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  filter: blur(6px);
+  z-index: 1;
+}
+
+.vinyl-disc {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: radial-gradient(circle, 
+    #1c1c22 0%, 
+    #09090b 22%, 
+    #1c1c22 25%, 
+    #09090b 38%, 
+    #2e2e38 40%, 
+    #09090b 52%, 
+    #1c1c22 55%, 
+    #09090b 70%, 
+    #1c1c22 74%, 
+    #09090b 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: spin 5s linear infinite;
+  animation-play-state: paused;
+}
+
+/* Vinyl rotation triggers when class playing is active */
+.landscape-player-card.playing .vinyl-disc {
+  animation-play-state: running;
+}
+
+.vinyl-disc::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 10%,
+    rgba(255, 255, 255, 0.06) 25%,
+    transparent 40%,
+    transparent 60%,
+    rgba(255, 255, 255, 0.06) 75%,
+    transparent 90%
+  );
+  pointer-events: none;
+}
+
+.vinyl-center {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold) 0%, #f472b6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #09090b;
+}
+
+.vinyl-center-hole {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--bg-dark);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Player Right Section (Details & Controls) */
+.player-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 148px;
+}
+
+.track-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 4px;
+}
+
+.track-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.track-artist {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.track-status-icon {
+  color: rgba(255, 255, 255, 0.6);
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  animation: pulse-soft 2s infinite ease-in-out;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Timeline & Progress Bar */
+.player-timeline {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.timeline-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+}
+
+.timeline-progress {
+  width: 0%;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 2px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.timeline-handle {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  width: 8px;
+  height: 8px;
+  background: #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.timeline-times {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 4px;
+}
+
+/* Controls row */
+.player-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 2px;
+}
+
+.player-btn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.player-btn:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+
+.player-btn i {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-play-pause-card i {
+  width: 22px;
+  height: 22px;
+}
+
+/* Volume row */
+.player-volume {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.player-volume i {
+  width: 12px;
+  height: 12px;
+}
+
+.volume-bar {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+}
+
+.volume-progress {
+  width: 80%;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 2px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.volume-handle {
+  position: absolute;
+  top: 50%;
+  left: 80%;
+  width: 6px;
+  height: 6px;
+  background: #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+/* Mobile responsive scaling */
+@media (max-width: 480px) {
+  .landscape-player-card {
+    top: 76px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    height: auto;
+    flex-direction: row;
+    padding: 12px;
+    gap: 12px;
+  }
+  .player-left {
+    flex: 0 0 100px;
+    height: 100px;
+  }
+  .vinyl-disc {
+    width: 80px;
+    height: 80px;
+  }
+  .vinyl-center {
+    width: 24px;
+    height: 24px;
+  }
+  .player-right {
+    height: 100px;
+  }
+  .track-title {
+    font-size: 0.85rem;
+    max-width: 110px;
+  }
+  .track-artist {
+    font-size: 0.65rem;
+    max-width: 110px;
+  }
+  .player-buttons {
+    gap: 12px;
+  }
+  .player-btn i {
+    width: 14px;
+    height: 14px;
+  }
+  .btn-play-pause-card i {
+    width: 18px;
+    height: 18px;
+  }
+  .player-volume {
+    display: none;
+  }
+}
+
 
 /* ==========================================================================
    STORY CONTAINERS & SLIDES (100VH VIEWPORT SNAP)
@@ -393,6 +783,12 @@ html, body {
   height: 44px;
   filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.6));
   animation: heartPulse 1.4s infinite alternate cubic-bezier(0.215, 0.610, 0.355, 1);
+  transition: transform 0.2s, filter 0.2s;
+  cursor: pointer;
+}
+
+.heart-icon-glowing:hover {
+  filter: drop-shadow(0 0 25px rgba(239, 68, 68, 0.95));
 }
 
 @keyframes heartPulse {
@@ -653,7 +1049,9 @@ html, body {
 }
 
 .letter-title {
-  font-size: 1.6rem;
+  font-family: 'Dancing Script', cursive;
+  font-size: 2.1rem;
+  font-weight: 700;
   color: var(--gold);
   margin-bottom: 16px;
   text-align: center;
@@ -663,11 +1061,12 @@ html, body {
 }
 
 .letter-text {
-  font-size: 0.95rem;
-  line-height: 1.8;
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.45rem;
+  line-height: 1.6;
   text-align: left;
   white-space: pre-line;
-  color: #e5e7eb;
+  color: #f3f4f6;
   letter-spacing: 0.5px;
 }
 
@@ -1324,3 +1723,6 @@ html, body {
     margin-top: 10px;
   }
 }
+
+
+

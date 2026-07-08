@@ -1457,7 +1457,7 @@ function triggerCandleFireworks(sourceX, sourceY) {
         y: -50 - Math.random() * 50, // staggered start heights
         vx: (Math.random() - 0.5) * 3,
         vy: Math.random() * 2.5 + 1.2,
-        size: Math.random() * 60 + 20, // random sizes between 20px and 80px
+        size: Math.random() * 25 + 15, // random sizes between 15px and 40px (perkecil ukuran)
         rotation: Math.random() * Math.PI * 2,
         rotationSpeed: (Math.random() - 0.5) * 0.08,
         type: "png-flower",
@@ -1898,7 +1898,7 @@ function triggerContinuousConfetti() {
         y: -30,
         vx: (Math.random() - 0.5) * 2,
         vy: Math.random() * 1.5 + 1.0,
-        size: Math.random() * 45 + 15, // random sizes between 15px and 60px
+        size: Math.random() * 20 + 10, // random sizes between 10px and 30px (perkecil ukuran)
         rotation: Math.random() * Math.PI * 2,
         rotationSpeed: (Math.random() - 0.5) * 0.05,
         type: "png-flower",
@@ -1966,6 +1966,34 @@ const glyphs = {
     {x: -1.5, y: 0}, {x: 1.5, y: 0},
     {x: -1.5, y: 1}, {x: 1.5, y: 1},
     {x: -1, y: 2}, {x: 0, y: 2}, {x: 1, y: 2}
+  ],
+  'A': [
+    {x: 0, y: -2},
+    {x: -0.5, y: -1}, {x: 0.5, y: -1},
+    {x: -1, y: 0}, {x: 0, y: 0}, {x: 1, y: 0},
+    {x: -1.5, y: 1}, {x: 1.5, y: 1},
+    {x: -2, y: 2}, {x: 2, y: 2}
+  ],
+  'C': [
+    {x: 0, y: -2}, {x: 1, y: -2},
+    {x: -1, y: -1},
+    {x: -1, y: 0},
+    {x: -1, y: 1},
+    {x: 0, y: 2}, {x: 1, y: 2}
+  ],
+  'N': [
+    {x: -1.5, y: -2}, {x: 1.5, y: -2},
+    {x: -1.5, y: -1}, {x: -0.5, y: -1}, {x: 1.5, y: -1},
+    {x: -1.5, y: 0}, {x: 0.5, y: 0}, {x: 1.5, y: 0},
+    {x: -1.5, y: 1}, {x: 1.5, y: 1},
+    {x: -1.5, y: 2}, {x: 1.5, y: 2}
+  ],
+  'K': [
+    {x: -1.2, y: -2}, {x: 1.2, y: -2},
+    {x: -1.2, y: -1}, {x: 0.2, y: -1},
+    {x: -1.2, y: 0}, {x: -0.5, y: 0},
+    {x: -1.2, y: 1}, {x: 0.2, y: 1},
+    {x: -1.2, y: 2}, {x: 1.2, y: 2}
   ]
 };
 
@@ -2116,6 +2144,44 @@ function spawnLovePattern(cx, cy) {
   });
 }
 
+function spawnNamePattern(cx, cy) {
+  const firstName = CONFIG.recipientName.split(" ")[0].toUpperCase();
+  const isMobile = canvas.width < 600;
+  
+  const charCount = firstName.length;
+  const spacing = isMobile ? Math.min(35, canvas.width / (charCount + 1)) : 70;
+  const scale = isMobile ? 7 : 12; // smaller scale for longer word
+  
+  const totalWidth = (charCount - 1) * spacing;
+  const startX = cx - totalWidth / 2;
+
+  for (let i = 0; i < charCount; i++) {
+    const char = firstName[i];
+    const points = glyphs[char] || [];
+    const charCx = startX + i * spacing;
+
+    points.forEach(pt => {
+      if (flowerImages.length === 0) return;
+      const imgIndex = Math.floor(Math.random() * flowerImages.length);
+      particles.push({
+        x: charCx + pt.x * scale + (Math.random() - 0.5) * 2,
+        y: cy + pt.y * scale + (Math.random() - 0.5) * 2,
+        vx: (Math.random() - 0.5) * 0.1,
+        vy: 0.15 + Math.random() * 0.1, // float downwards slowly (atas kebawah)
+        gravity: 0,
+        drag: 1.0,
+        size: (Math.random() * 8 + 18) * (isMobile ? 0.6 : 0.9), // slightly smaller flowers to fit
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.015,
+        type: "png-flower",
+        img: flowerImages[imgIndex],
+        alpha: 1.0,
+        decay: -0.002 - Math.random() * 0.0008
+      });
+    });
+  }
+}
+
 function triggerFlowerPatternsSequence() {
   if (patternInterval) clearInterval(patternInterval);
 
@@ -2123,6 +2189,7 @@ function triggerFlowerPatternsSequence() {
   const sequence = [
     { type: "heart", scale: 9.5 },
     { type: "i_heart_u" },
+    { type: "name" }, // Spawns the recipient's first name
     { type: "love" },
     { type: "hearts_random" }
   ];
@@ -2142,24 +2209,26 @@ function triggerFlowerPatternsSequence() {
 
     const item = sequence[step % sequence.length];
     const cx = canvas.width / 2;
-    const cy = canvas.height / 2 - 40; // slightly above center to avoid overlap with wish card text
+    const cy = canvas.height * 0.22; // positioned high on the screen (above the text box) to ensure visibility
 
     if (item.type === "heart") {
       spawnHeartPattern(cx, cy, item.scale);
     } else if (item.type === "i_heart_u") {
       spawnIHeartUPattern(cx, cy);
+    } else if (item.type === "name") {
+      spawnNamePattern(cx, cy);
     } else if (item.type === "love") {
       spawnLovePattern(cx, cy);
     } else if (item.type === "hearts_random") {
-      spawnHeartPattern(cx - canvas.width * 0.25, cy - 80, 5);
+      spawnHeartPattern(cx - canvas.width * 0.25, cy - 40, 5);
       setTimeout(() => {
         if (currentSlide === slides.length - 1) {
-          spawnHeartPattern(cx + canvas.width * 0.25, cy + 80, 5);
+          spawnHeartPattern(cx + canvas.width * 0.25, cy + 40, 5);
         }
       }, 1000);
       setTimeout(() => {
         if (currentSlide === slides.length - 1) {
-          spawnHeartPattern(cx, cy - 120, 6);
+          spawnHeartPattern(cx, cy - 80, 6);
         }
       }, 2000);
     }

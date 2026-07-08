@@ -87,6 +87,19 @@ function navigateToSlide(targetIndex) {
   if (targetIndex < 0 || targetIndex >= slides.length) return;
   if (targetIndex === 0) return; // Prevent going back to landing page once opened
 
+  // Clear flower patterns interval & music blowout fade if navigating away from the final slide
+  if (targetIndex !== slides.length - 1) {
+    if (patternInterval) {
+      clearInterval(patternInterval);
+      patternInterval = null;
+    }
+    if (musicStopTimeout) {
+      clearTimeout(musicStopTimeout);
+      musicStopTimeout = null;
+    }
+    cancelMusicFade();
+  }
+
   // Play whoosh transition SFX
   SFX.playWhoosh();
 
@@ -538,6 +551,7 @@ function startTrackPlayback(track) {
 }
 
 function playMusic() {
+  cancelMusicFade();
   musicPlaying = true;
   musicControl.classList.add("playing");
   landscapePlayerCard.classList.add("playing");
@@ -560,6 +574,52 @@ function pauseMusic() {
   const compactBtn = musicControl.querySelector(".music-btn");
   if (compactBtn) {
     compactBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-volume-x"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>`;
+  }
+}
+
+let fadeInterval = null;
+let originalVolumeBeforeFade = null;
+
+function fadeOutAndPauseMusic(durationMs = 5000) {
+  if (fadeInterval) clearInterval(fadeInterval);
+  
+  const startVolume = audioEl.volume;
+  originalVolumeBeforeFade = globalVolume;
+  
+  const intervalTime = 100;
+  const steps = durationMs / intervalTime;
+  let currentStep = 0;
+
+  fadeInterval = setInterval(() => {
+    currentStep++;
+    const fraction = 1 - (currentStep / steps);
+    const newVolume = Math.max(0, startVolume * fraction);
+    
+    audioEl.volume = newVolume;
+    globalVolume = newVolume;
+
+    if (currentStep >= steps) {
+      clearInterval(fadeInterval);
+      fadeInterval = null;
+      pauseMusic();
+      
+      // Restore volume settings for future playback
+      audioEl.volume = originalVolumeBeforeFade;
+      globalVolume = originalVolumeBeforeFade;
+      originalVolumeBeforeFade = null;
+    }
+  }, intervalTime);
+}
+
+function cancelMusicFade() {
+  if (fadeInterval) {
+    clearInterval(fadeInterval);
+    fadeInterval = null;
+  }
+  if (originalVolumeBeforeFade !== null) {
+    audioEl.volume = originalVolumeBeforeFade;
+    globalVolume = originalVolumeBeforeFade;
+    originalVolumeBeforeFade = null;
   }
 }
 
@@ -1387,6 +1447,28 @@ function triggerCandleFireworks(sourceX, sourceY) {
       });
     }
 
+    // Flowers falling along with confetti (various sizes matching flower explosion)
+    const flowerCount = Math.floor(Math.random() * 6) + 12; // 12 to 17 flowers per burst
+    for (let i = 0; i < flowerCount; i++) {
+      if (flowerImages.length === 0) continue;
+      const imgIndex = Math.floor(Math.random() * flowerImages.length);
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: -50 - Math.random() * 50, // staggered start heights
+        vx: (Math.random() - 0.5) * 3,
+        vy: Math.random() * 2.5 + 1.2,
+        size: Math.random() * 60 + 20, // random sizes between 20px and 80px
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.08,
+        type: "png-flower",
+        img: flowerImages[imgIndex],
+        alpha: 1.0,
+        decay: Math.random() * -0.0025 - 0.0015, // slower decay to fall completely
+        drag: 0.98,
+        gravity: 0.02 + Math.random() * 0.03 // drift down gently
+      });
+    }
+
     burstCount++;
     if (burstCount < 8) {
       setTimeout(launchBurst, 250);
@@ -1692,12 +1774,16 @@ function blowCandleOut() {
   if (candleBlown) return;
   candleBlown = true;
 
-  // Stop background music 12 seconds after the candle is blown out (within 10-15s window)
-  if (musicStopTimeout) clearTimeout(musicStopTimeout);
-  musicStopTimeout = setTimeout(() => {
-    pauseMusic();
+  // Stop and fade background music after candle blowout (30 seconds full volume + 5 seconds fade out)
+  if (musicStopTimeout) {
+    clearTimeout(musicStopTimeout);
     musicStopTimeout = null;
-  }, 12000);
+  }
+  cancelMusicFade();
+  musicStopTimeout = setTimeout(() => {
+    fadeOutAndPauseMusic(5000);
+    musicStopTimeout = null;
+  }, 30000);
 
   // 1. Play blow sound and fireworks SFX
   SFX.playBlow();
@@ -1776,6 +1862,9 @@ function blowCandleOut() {
 
       // Emit continuous float particles at the end
       triggerContinuousConfetti();
+      
+      // Start flower patterns sequence
+      triggerFlowerPatternsSequence();
     }
   });
 }
@@ -1800,7 +1889,291 @@ function triggerContinuousConfetti() {
       alpha: 1.0,
       decay: Math.random() * -0.003 - 0.001
     });
+
+    // Spawn continuous flowers occasionally
+    if (Math.random() < 0.35 && flowerImages.length > 0) {
+      const imgIndex = Math.floor(Math.random() * flowerImages.length);
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: -30,
+        vx: (Math.random() - 0.5) * 2,
+        vy: Math.random() * 1.5 + 1.0,
+        size: Math.random() * 45 + 15, // random sizes between 15px and 60px
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.05,
+        type: "png-flower",
+        img: flowerImages[imgIndex],
+        alpha: 1.0,
+        decay: Math.random() * -0.002 - 0.001,
+        drag: 0.98,
+        gravity: 0.02 + Math.random() * 0.02
+      });
+    }
   }, 1800 / 30); // emit regularly
+}
+
+// ==========================================================================
+// ARRANGED FLOWER PATTERNS (HEARTS, ROMANTIC WORDS)
+// ==========================================================================
+let patternInterval = null;
+
+const glyphs = {
+  'I': [
+    {x: -1, y: -2}, {x: 0, y: -2}, {x: 1, y: -2},
+    {x: 0, y: -1},
+    {x: 0, y: 0},
+    {x: 0, y: 1},
+    {x: -1, y: 2}, {x: 0, y: 2}, {x: 1, y: 2}
+  ],
+  'L': [
+    {x: -1, y: -2},
+    {x: -1, y: -1},
+    {x: -1, y: 0},
+    {x: -1, y: 1},
+    {x: -1, y: 2}, {x: 0, y: 2}, {x: 1, y: 2}
+  ],
+  'O': [
+    {x: -1, y: -2}, {x: 0, y: -2}, {x: 1, y: -2},
+    {x: -1.5, y: -1}, {x: 1.5, y: -1},
+    {x: -1.5, y: 0}, {x: 1.5, y: 0},
+    {x: -1.5, y: 1}, {x: 1.5, y: 1},
+    {x: -1, y: 2}, {x: 0, y: 2}, {x: 1, y: 2}
+  ],
+  'V': [
+    {x: -2, y: -2}, {x: 2, y: -2},
+    {x: -1.5, y: -1}, {x: 1.5, y: -1},
+    {x: -1, y: 0}, {x: 1, y: 0},
+    {x: -0.5, y: 1}, {x: 0.5, y: 1},
+    {x: 0, y: 2}
+  ],
+  'E': [
+    {x: -1, y: -2}, {x: 0, y: -2}, {x: 1, y: -2},
+    {x: -1, y: -1},
+    {x: -1, y: 0}, {x: 0, y: 0}, {x: 1, y: 0},
+    {x: -1, y: 1},
+    {x: -1, y: 2}, {x: 0, y: 2}, {x: 1, y: 2}
+  ],
+  'Y': [
+    {x: -2, y: -2}, {x: 2, y: -2},
+    {x: -1, y: -1}, {x: 1, y: -1},
+    {x: 0, y: 0},
+    {x: 0, y: 1},
+    {x: 0, y: 2}
+  ],
+  'U': [
+    {x: -1.5, y: -2}, {x: 1.5, y: -2},
+    {x: -1.5, y: -1}, {x: 1.5, y: -1},
+    {x: -1.5, y: 0}, {x: 1.5, y: 0},
+    {x: -1.5, y: 1}, {x: 1.5, y: 1},
+    {x: -1, y: 2}, {x: 0, y: 2}, {x: 1, y: 2}
+  ]
+};
+
+function spawnHeartPattern(cx, cy, scale) {
+  const isMobile = canvas.width < 600;
+  const finalScale = isMobile ? scale * 0.6 : scale;
+  const count = isMobile ? 24 : 36;
+  const points = [];
+  for (let i = 0; i < count; i++) {
+    const t = (i / count) * Math.PI * 2;
+    const x = 16 * Math.pow(Math.sin(t), 3);
+    const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+    points.push({ x: x * finalScale, y: y * finalScale });
+  }
+
+  points.forEach(pt => {
+    if (flowerImages.length === 0) return;
+    const imgIndex = Math.floor(Math.random() * flowerImages.length);
+    particles.push({
+      x: cx + pt.x + (Math.random() - 0.5) * 4,
+      y: cy + pt.y + (Math.random() - 0.5) * 4,
+      vx: (Math.random() - 0.5) * 0.1,
+      vy: 0.15 + Math.random() * 0.1, // float downwards slowly (atas kebawah)
+      gravity: 0,
+      drag: 1.0,
+      size: (Math.random() * 12 + 24) * (isMobile ? 0.7 : 1.0),
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.015,
+      type: "png-flower",
+      img: flowerImages[imgIndex],
+      alpha: 1.0,
+      decay: -0.002 - Math.random() * 0.0008
+    });
+  });
+}
+
+function spawnIHeartUPattern(cx, cy) {
+  const isMobile = canvas.width < 600;
+  const spacing = isMobile ? 70 : 130;
+  const scale = isMobile ? 13 : 20;
+
+  // 1. Spawn I
+  const pointsI = glyphs['I'] || [];
+  pointsI.forEach(pt => {
+    if (flowerImages.length === 0) return;
+    const imgIndex = Math.floor(Math.random() * flowerImages.length);
+    particles.push({
+      x: cx - spacing + pt.x * scale + (Math.random() - 0.5) * 3,
+      y: cy + pt.y * scale + (Math.random() - 0.5) * 3,
+      vx: (Math.random() - 0.5) * 0.1,
+      vy: 0.15 + Math.random() * 0.1, // float downwards slowly (atas kebawah)
+      gravity: 0,
+      drag: 1.0,
+      size: (Math.random() * 8 + 18) * (isMobile ? 0.7 : 1.0),
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.015,
+      type: "png-flower",
+      img: flowerImages[imgIndex],
+      alpha: 1.0,
+      decay: -0.002 - Math.random() * 0.0008
+    });
+  });
+
+  // 2. Spawn ❤️
+  const heartCount = isMobile ? 16 : 24;
+  const heartPoints = [];
+  const heartScale = isMobile ? 2.5 : 4.5;
+  for (let i = 0; i < heartCount; i++) {
+    const t = (i / heartCount) * Math.PI * 2;
+    const x = 16 * Math.pow(Math.sin(t), 3);
+    const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+    heartPoints.push({ x: x * heartScale, y: y * heartScale });
+  }
+  heartPoints.forEach(pt => {
+    if (flowerImages.length === 0) return;
+    const imgIndex = Math.floor(Math.random() * flowerImages.length);
+    particles.push({
+      x: cx + pt.x + (Math.random() - 0.5) * 3,
+      y: cy + pt.y + (Math.random() - 0.5) * 3,
+      vx: (Math.random() - 0.5) * 0.1,
+      vy: 0.15 + Math.random() * 0.1, // float downwards slowly (atas kebawah)
+      gravity: 0,
+      drag: 1.0,
+      size: (Math.random() * 8 + 18) * (isMobile ? 0.7 : 1.0),
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.015,
+      type: "png-flower",
+      img: flowerImages[imgIndex],
+      alpha: 1.0,
+      decay: -0.002 - Math.random() * 0.0008
+    });
+  });
+
+  // 3. Spawn U
+  const pointsU = glyphs['U'] || [];
+  pointsU.forEach(pt => {
+    if (flowerImages.length === 0) return;
+    const imgIndex = Math.floor(Math.random() * flowerImages.length);
+    particles.push({
+      x: cx + spacing + pt.x * scale + (Math.random() - 0.5) * 3,
+      y: cy + pt.y * scale + (Math.random() - 0.5) * 3,
+      vx: (Math.random() - 0.5) * 0.1,
+      vy: 0.15 + Math.random() * 0.1, // float downwards slowly (atas kebawah)
+      gravity: 0,
+      drag: 1.0,
+      size: (Math.random() * 8 + 18) * (isMobile ? 0.7 : 1.0),
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.015,
+      type: "png-flower",
+      img: flowerImages[imgIndex],
+      alpha: 1.0,
+      decay: -0.002 - Math.random() * 0.0008
+    });
+  });
+}
+
+function spawnLovePattern(cx, cy) {
+  const isMobile = canvas.width < 600;
+  const spacing = isMobile ? 60 : 110;
+  const scale = isMobile ? 13 : 20;
+
+  const chars = ['L', 'O', 'V', 'E'];
+  const offsets = [-1.5, -0.5, 0.5, 1.5];
+
+  chars.forEach((char, index) => {
+    const points = glyphs[char] || [];
+    const charCx = cx + offsets[index] * spacing;
+
+    points.forEach(pt => {
+      if (flowerImages.length === 0) return;
+      const imgIndex = Math.floor(Math.random() * flowerImages.length);
+      particles.push({
+        x: charCx + pt.x * scale + (Math.random() - 0.5) * 3,
+        y: cy + pt.y * scale + (Math.random() - 0.5) * 3,
+        vx: (Math.random() - 0.5) * 0.1,
+        vy: 0.15 + Math.random() * 0.1, // float downwards slowly (atas kebawah)
+        gravity: 0,
+        drag: 1.0,
+        size: (Math.random() * 8 + 18) * (isMobile ? 0.7 : 1.0),
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.015,
+        type: "png-flower",
+        img: flowerImages[imgIndex],
+        alpha: 1.0,
+        decay: -0.002 - Math.random() * 0.0008
+      });
+    });
+  });
+}
+
+function triggerFlowerPatternsSequence() {
+  if (patternInterval) clearInterval(patternInterval);
+
+  let step = 0;
+  const sequence = [
+    { type: "heart", scale: 9.5 },
+    { type: "i_heart_u" },
+    { type: "love" },
+    { type: "hearts_random" }
+  ];
+
+  function runNext() {
+    if (currentSlide !== slides.length - 1) {
+      clearInterval(patternInterval);
+      patternInterval = null;
+      return;
+    }
+
+    if (step >= sequence.length) {
+      clearInterval(patternInterval);
+      patternInterval = null;
+      return; // Stop cycling (cukup beberapa kali saja)
+    }
+
+    const item = sequence[step % sequence.length];
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2 - 40; // slightly above center to avoid overlap with wish card text
+
+    if (item.type === "heart") {
+      spawnHeartPattern(cx, cy, item.scale);
+    } else if (item.type === "i_heart_u") {
+      spawnIHeartUPattern(cx, cy);
+    } else if (item.type === "love") {
+      spawnLovePattern(cx, cy);
+    } else if (item.type === "hearts_random") {
+      spawnHeartPattern(cx - canvas.width * 0.25, cy - 80, 5);
+      setTimeout(() => {
+        if (currentSlide === slides.length - 1) {
+          spawnHeartPattern(cx + canvas.width * 0.25, cy + 80, 5);
+        }
+      }, 1000);
+      setTimeout(() => {
+        if (currentSlide === slides.length - 1) {
+          spawnHeartPattern(cx, cy - 120, 6);
+        }
+      }, 2000);
+    }
+
+    step++;
+  }
+
+  // Run the first pattern after 3.5 seconds
+  setTimeout(() => {
+    if (currentSlide === slides.length - 1) {
+      runNext();
+      patternInterval = setInterval(runNext, 7000); // cycle every 7 seconds
+    }
+  }, 3500);
 }
 
 // ==========================================================================
@@ -2033,6 +2406,14 @@ function init() {
       if (musicStopTimeout) {
         clearTimeout(musicStopTimeout);
         musicStopTimeout = null;
+      }
+      
+      cancelMusicFade();
+
+      // Clear flower patterns interval if user replays
+      if (patternInterval) {
+        clearInterval(patternInterval);
+        patternInterval = null;
       }
 
       // Restart music when replaying the storybook

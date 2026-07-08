@@ -1528,85 +1528,231 @@ html, body {
 
 @media (max-width: 768px) {
   .slide {
-    padding: 24px 16px;
+    padding: 16px 12px;
   }
 
   .section-title {
-    font-size: 2.2rem;
+    font-size: 1.8rem;
+    margin-bottom: 4px;
   }
   
+  .section-subtitle {
+    font-size: 0.8rem;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+
+  .landing-title {
+    font-size: 1.9rem;
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+
+  .landing-subtitle {
+    font-size: 0.8rem;
+    margin-bottom: 24px;
+  }
+
+  .gift-box {
+    width: 120px;
+    height: 120px;
+  }
+
   .dedication-name {
     font-size: 2.8rem;
     line-height: 1.3;
+  }
+
+  .dedication-desc {
+    font-size: 0.8rem;
+    line-height: 1.5;
   }
   
   .counter-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
+    margin-bottom: 20px;
   }
   
+  .counter-card {
+    padding: 10px 4px;
+    border-radius: 12px;
+  }
+
   .counter-num {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
+  }
+
+  .counter-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.5px;
   }
 
   .calendar-wrapper {
-    max-width: 320px;
-    padding: 16px;
+    max-width: 280px;
+    padding: 12px;
+  }
+
+  .calendar-header {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+
+  .calendar-days, .calendar-grid {
+    gap: 4px;
+  }
+
+  .calendar-days {
+    font-size: 0.7rem;
+    padding-bottom: 4px;
+  }
+
+  .calendar-grid div {
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+  }
+
+  .calendar-caption {
+    font-size: 0.7rem;
+    margin-top: 10px;
   }
   
-  .traits-grid, .memory-cards-container {
+  .traits-grid, .memory-cards-container, .gallery-wrapper {
     grid-template-columns: 1fr;
-    gap: 16px;
-    max-height: 40vh;
+    gap: 12px;
+    max-height: 46vh;
     overflow-y: auto;
     padding-right: 6px;
   }
 
+  .trait-card {
+    padding: 14px 16px;
+    gap: 8px;
+  }
+
+  .trait-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .trait-icon i {
+    width: 18px;
+    height: 18px;
+  }
+
+  .trait-title {
+    font-size: 1.15rem;
+  }
+
+  .trait-desc {
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+
+  .memory-card {
+    padding: 14px 16px;
+  }
+
+  .memory-badge {
+    margin-bottom: 8px;
+  }
+
+  .memory-card-title {
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+  }
+
+  .memory-card-desc {
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+
   /* Custom scrollbar for mobile lists */
-  .traits-grid::-webkit-scrollbar, .memory-cards-container::-webkit-scrollbar {
+  .traits-grid::-webkit-scrollbar, 
+  .memory-cards-container::-webkit-scrollbar,
+  .gallery-wrapper::-webkit-scrollbar {
     width: 3px;
   }
-  .traits-grid::-webkit-scrollbar-thumb, .memory-cards-container::-webkit-scrollbar-thumb {
+  
+  .traits-grid::-webkit-scrollbar-thumb, 
+  .memory-cards-container::-webkit-scrollbar-thumb,
+  .gallery-wrapper::-webkit-scrollbar-thumb {
     background: var(--glass-border);
     border-radius: 2px;
   }
 
   .glass-card-letter {
     width: 92%;
-    height: 80vh;
-    padding: 30px 16px 16px 16px;
+    height: 82vh;
+    padding: 28px 16px 16px 16px;
+  }
+
+  .letter-title {
+    font-size: 1.7rem;
+    margin-bottom: 12px;
+  }
+
+  .letter-text {
+    font-size: 1.2rem;
+    line-height: 1.5;
   }
 
   .gallery-wrapper {
-    gap: 16px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
   .polaroid-frame {
-    width: 140px;
-    padding: 8px 8px 16px 8px;
+    width: 125px;
+    padding: 6px 6px 12px 6px;
   }
 
   .polaroid-img-placeholder {
-    height: 110px;
+    height: 95px;
   }
 
   .polaroid-caption {
-    font-size: 0.85rem;
-    margin-top: 6px;
+    font-size: 0.75rem;
+    margin-top: 4px;
   }
 
   .placeholder-text {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
   }
 
   .cam-icon {
-    width: 20px;
-    height: 20px;
-    margin-bottom: 4px;
+    width: 16px;
+    height: 16px;
+    margin-bottom: 2px;
+  }
+
+  .cake-container {
+    width: 160px;
+    height: 110px;
+    margin: 20px auto;
+  }
+
+  .cake-plate {
+    width: 200px;
+    left: -20px;
   }
 
   .final-heading {
-    font-size: 2.3rem;
+    font-size: 2.1rem;
+    margin-bottom: 12px;
+  }
+
+  .final-sub {
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+
+  .final-wish-instruction {
+    font-size: 0.75rem;
+    margin-top: 10px;
   }
 }
 
@@ -1625,6 +1771,25 @@ html, body {
   .envelope .letter-mockup {
     width: 250px;
     height: 80px;
+  }
+
+  .nav-btn span {
+    display: none;
+  }
+  
+  .story-navigation {
+    gap: 12px;
+    bottom: 16px;
+    padding: 6px 10px;
+  }
+  
+  .slide-dots {
+    gap: 6px;
+  }
+  
+  .dot {
+    width: 5px;
+    height: 5px;
   }
 }
 

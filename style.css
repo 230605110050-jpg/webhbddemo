@@ -526,7 +526,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px;
+  padding: 40px 24px 100px 24px; /* bottom padding to offset fixed navigation card visually */
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -1528,7 +1528,7 @@ html, body {
 
 @media (max-width: 768px) {
   .slide {
-    padding: 16px 12px;
+    padding: 16px 12px 80px 12px; /* offset bottom navigation on mobile */
   }
 
   .section-title {
@@ -1730,14 +1730,9 @@ html, body {
   }
 
   .cake-container {
-    width: 160px;
-    height: 110px;
-    margin: 20px auto;
-  }
-
-  .cake-plate {
-    width: 200px;
-    left: -20px;
+    transform: scale(0.72);
+    transform-origin: center;
+    margin: 10px auto;
   }
 
   .final-heading {

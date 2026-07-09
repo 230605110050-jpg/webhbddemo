@@ -924,8 +924,8 @@ html, body {
    ========================================================================== */
 .envelope-wrapper {
   position: relative;
-  width: 300px;
-  height: 240px;
+  width: 450px;
+  height: 360px;
   margin: 40px auto;
   perspective: 1000px;
   cursor: pointer;
@@ -1675,19 +1675,8 @@ html, body {
 
 @media (max-width: 480px) {
   .envelope-wrapper {
-    width: 270px;
-    height: 180px;
-  }
-
-  .envelope .flap {
-    border-left-width: 135px;
-    border-right-width: 135px;
-    border-top-width: 90px;
-  }
-
-  .envelope .letter-mockup {
-    width: 250px;
-    height: 80px;
+    width: 300px;
+    height: 240px;
   }
 
   .nav-btn span {

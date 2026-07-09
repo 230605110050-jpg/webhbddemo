@@ -1838,6 +1838,13 @@ function closeLetterEnvelope() {
   // Reset typewriter
   typewriterText.textContent = "";
 
+  // Hide download button immediately
+  const downloadBtn = document.getElementById("btnDownloadLetter");
+  if (downloadBtn) {
+    downloadBtn.style.display = "none";
+    gsap.set(downloadBtn, { opacity: 0, y: 10 });
+  }
+
   // Dynamic slide down and rotate away
   gsap.killTweensOf([letterOverlay, letterCard]);
   gsap.to(letterCard, {
@@ -1878,6 +1885,16 @@ function typewriteContent() {
 
       i++;
       setTimeout(type, speed);
+    } else if (i >= CONFIG.letterText.length && letterOpened) {
+      // Show download button when typing completes
+      const downloadBtn = document.getElementById("btnDownloadLetter");
+      if (downloadBtn) {
+        downloadBtn.style.display = "inline-flex";
+        gsap.fromTo(downloadBtn,
+          { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }
+        );
+      }
     }
   }
 
@@ -2722,6 +2739,130 @@ function init() {
       // Go back to the dedication page (Slide 1)
       navigateToSlide(1);
     });
+  }
+
+  // Wire up Download Letter Button
+  const btnDownloadLetter = document.getElementById("btnDownloadLetter");
+  if (btnDownloadLetter) {
+    btnDownloadLetter.addEventListener("click", () => {
+      SFX.playPop();
+      downloadLetterAsImage();
+    });
+  }
+}
+
+// Function to render and download the letter as a beautifully styled PNG image
+function downloadLetterAsImage() {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  
+  // High resolution size
+  canvas.width = 800;
+  canvas.height = 1000;
+  
+  const w = canvas.width;
+  const h = canvas.height;
+  
+  // 1. Draw beautiful dark background gradient matching the web app theme
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, "#110f33");
+  grad.addColorStop(1, "#060913");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+  
+  // 2. Draw subtle star-field overlay on background for premium feel
+  ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+  for (let i = 0; i < 40; i++) {
+    const starX = Math.random() * w;
+    const starY = Math.random() * h;
+    const starSize = Math.random() * 2 + 1;
+    ctx.beginPath();
+    ctx.arc(starX, starY, starSize, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // 3. Draw elegant gold border frame
+  ctx.strokeStyle = "rgba(229, 193, 88, 0.3)";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(30, 30, w - 60, h - 60);
+  
+  ctx.strokeStyle = "rgba(229, 193, 88, 0.15)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(36, 36, w - 72, h - 72);
+  
+  // 4. Draw Title
+  const firstName = CONFIG.recipientName.split(" ")[0];
+  const titleText = `Selamat Ulang Tahun, ${firstName}`;
+  
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#e5c158"; // Gold color
+  
+  ctx.font = "italic bold 38px 'Playfair Display', 'Georgia', serif";
+  ctx.fillText(titleText, w / 2, 95);
+  
+  // Subtle divider line
+  ctx.strokeStyle = "rgba(229, 193, 88, 0.2)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(w / 2 - 120, 125);
+  ctx.lineTo(w / 2 + 120, 125);
+  ctx.stroke();
+  
+  // 5. Draw Letter Body
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#f3f4f6"; // bright white
+  
+  ctx.font = "italic 24px 'Dancing Script', 'Georgia', cursive";
+  
+  const startX = 75;
+  const startY = 185;
+  const maxTextWidth = w - 150;
+  const lineHeight = 38;
+  
+  drawTextWithLineWrapping(ctx, CONFIG.letterText, startX, startY, maxTextWidth, lineHeight);
+  
+  // 6. Draw footer note
+  ctx.textAlign = "center";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+  ctx.font = "14px 'Poppins', 'sans-serif'";
+  ctx.fillText("Dikirim dengan cinta dari website ulang tahun interaktif Anda ❤️", w / 2, h - 55);
+  
+  // 7. Trigger file download
+  const link = document.createElement("a");
+  link.download = `Surat_Untuk_${firstName}.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+
+// Canvas text wrapping function
+function drawTextWithLineWrapping(ctx, text, x, y, maxWidth, lineHeight) {
+  const paragraphs = text.split('\n');
+  let currentY = y;
+  
+  for (let i = 0; i < paragraphs.length; i++) {
+    const paragraph = paragraphs[i];
+    if (paragraph === "") {
+      currentY += lineHeight * 0.7; // Paragraph gap
+      continue;
+    }
+    
+    const words = paragraph.split(' ');
+    let line = '';
+    
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+      if (testWidth > maxWidth && n > 0) {
+        ctx.fillText(line, x, currentY);
+        line = words[n] + ' ';
+        currentY += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, x, currentY);
+    currentY += lineHeight;
   }
 }
 

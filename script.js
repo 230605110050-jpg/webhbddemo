@@ -163,7 +163,13 @@ function navigateToSlide(targetIndex) {
 
 // Custom animations based on page activation (utilizing fromTo to reset states reliably)
 function triggerPageAnimations(slideIndex) {
-  if (slideIndex === 2) {
+  if (slideIndex === 1) {
+    // Dedication Page - Animate dedication title
+    gsap.fromTo(".dedication-name",
+      { opacity: 0, scale: 0.8, y: 20 },
+      { opacity: 1, scale: 1, y: 0, duration: 1.0, ease: "back.out(1.2)" }
+    );
+  } else if (slideIndex === 2) {
     // Milestones Slide - Animate Counter cards
     gsap.fromTo(".counter-card",
       { opacity: 0, y: 25 },
@@ -1006,10 +1012,144 @@ let particles = [];
 let shootingStars = [];
 let mode = "stars"; // 'stars', 'burst', 'fireworks'
 
+// Constellation class for faint connected stars in background
+class Constellation {
+  constructor(cx, cy, numStars = 6) {
+    this.cx = cx;
+    this.cy = cy;
+    this.stars = [];
+    this.edges = [];
+    this.alpha = 0;
+    this.state = "fadeIn"; // "fadeIn", "static", "fadeOut"
+    this.timer = 0;
+    this.staticDuration = 5000 + Math.random() * 4000; // 5-9 seconds static
+    this.fadeSpeed = 0.00005 + Math.random() * 0.00004; // speed per ms (slow celestial fade)
+    this.maxAlpha = 0.15 + Math.random() * 0.12; // faint gold glowing lines
+
+    // Generate stars relative to center
+    const radius = 60 + Math.random() * 70;
+    for (let i = 0; i < numStars; i++) {
+      const angle = (i / numStars) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+      const r = radius * (0.4 + Math.random() * 0.6);
+      this.stars.push({
+        rx: Math.cos(angle) * r,
+        ry: Math.sin(angle) * r,
+        size: Math.random() * 1.5 + 0.8,
+        sparkle: Math.random() < 0.45
+      });
+    }
+
+    // Connect stars to form network
+    for (let i = 0; i < numStars; i++) {
+      if (Math.random() < 0.85) {
+        this.edges.push([i, (i + 1) % numStars]);
+      }
+      if (Math.random() < 0.3) {
+        const nextNext = (i + 2) % numStars;
+        this.edges.push([i, nextNext]);
+      }
+    }
+  }
+
+  update(dt) {
+    if (this.state === "fadeIn") {
+      this.alpha += this.fadeSpeed * dt;
+      if (this.alpha >= this.maxAlpha) {
+        this.alpha = this.maxAlpha;
+        this.state = "static";
+        this.timer = 0;
+      }
+    } else if (this.state === "static") {
+      this.timer += dt;
+      if (this.timer >= this.staticDuration) {
+        this.state = "fadeOut";
+      }
+    } else if (this.state === "fadeOut") {
+      this.alpha -= this.fadeSpeed * dt;
+      if (this.alpha <= 0) {
+        this.alpha = 0;
+        this.state = "dead";
+      }
+    }
+  }
+
+  draw(cCtx) {
+    cCtx.save();
+
+    // Draw connected lines (faint glow)
+    cCtx.strokeStyle = `rgba(229, 193, 88, ${this.alpha * 0.7})`;
+    cCtx.lineWidth = 0.65;
+    cCtx.shadowBlur = 3;
+    cCtx.shadowColor = "rgba(229, 193, 88, 0.35)";
+
+    this.edges.forEach(([idx1, idx2]) => {
+      const p1 = this.stars[idx1];
+      const p2 = this.stars[idx2];
+      cCtx.beginPath();
+      cCtx.moveTo(this.cx + p1.rx, this.cy + p1.ry);
+      cCtx.lineTo(this.cx + p2.rx, this.cy + p2.ry);
+      cCtx.stroke();
+    });
+
+    // Draw star nodes
+    cCtx.shadowBlur = 4;
+    cCtx.shadowColor = "rgba(255, 255, 255, 0.7)";
+    this.stars.forEach(star => {
+      const x = this.cx + star.rx;
+      const y = this.cy + star.ry;
+
+      cCtx.fillStyle = `rgba(255, 255, 255, ${this.alpha * 1.5})`;
+      cCtx.beginPath();
+      cCtx.arc(x, y, star.size, 0, Math.PI * 2);
+      cCtx.fill();
+
+      if (star.sparkle) {
+        cCtx.strokeStyle = `rgba(255, 255, 255, ${this.alpha})`;
+        cCtx.lineWidth = 0.5;
+        cCtx.beginPath();
+        cCtx.moveTo(x - star.size * 3.5, y);
+        cCtx.lineTo(x + star.size * 3.5, y);
+        cCtx.moveTo(x, y - star.size * 3.5);
+        cCtx.lineTo(x, y + star.size * 3.5);
+        cCtx.stroke();
+      }
+    });
+
+    cCtx.restore();
+  }
+}
+
+let constellations = [];
+let lastFrameTime = performance.now();
+
+function spawnNewConstellation() {
+  const cx = Math.random() * (canvas.width * 0.7) + canvas.width * 0.15;
+  const cy = Math.random() * (canvas.height * 0.6) + canvas.height * 0.2;
+  const numStars = Math.floor(Math.random() * 4) + 5; // 5 to 8 stars
+  constellations.push(new Constellation(cx, cy, numStars));
+}
+
+function initConstellations() {
+  constellations = [];
+  const maxConstellations = Math.min(3, Math.max(1, Math.floor(canvas.width / 500)));
+  for (let i = 0; i < maxConstellations; i++) {
+    const cx = Math.random() * (canvas.width * 0.7) + canvas.width * 0.15;
+    const cy = Math.random() * (canvas.height * 0.6) + canvas.height * 0.2;
+    const numStars = Math.floor(Math.random() * 4) + 5;
+    const constel = new Constellation(cx, cy, numStars);
+    // Stagger initial states
+    constel.alpha = Math.random() * constel.maxAlpha;
+    constel.state = Math.random() < 0.5 ? "fadeIn" : "static";
+    constel.timer = Math.random() * constel.staticDuration;
+    constellations.push(constel);
+  }
+}
+
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   initStars();
+  initConstellations();
 }
 window.addEventListener("resize", resizeCanvas);
 
@@ -1143,6 +1283,22 @@ function animateCanvas() {
       ctx.restore();
     }
   });
+
+  // 1.2 Draw & Update Constellations (faint connected stars in background)
+  const now = performance.now();
+  let deltaTime = now - lastFrameTime;
+  lastFrameTime = now;
+  if (deltaTime > 1000) deltaTime = 16.67;
+
+  for (let i = constellations.length - 1; i >= 0; i--) {
+    const c = constellations[i];
+    c.update(deltaTime);
+    c.draw(ctx);
+    if (c.state === "dead") {
+      constellations.splice(i, 1);
+      spawnNewConstellation();
+    }
+  }
 
   // 1.5. Draw & Update Shooting Stars
   if (Math.random() < 0.0035 && shootingStars.length < 3) {
@@ -1624,47 +1780,54 @@ function openLetterEnvelope() {
   // Emit hearts floating up from envelope
   emitHearts();
 
-  // Wait for flap opening animation, then run high-end GSAP entrance timeline for letter modal
-  setTimeout(() => {
-    letterOverlay.classList.add("active");
-    
-    // Clear any previous inline styles to prevent animation conflicts
-    gsap.killTweensOf([letterOverlay, letterCard]);
-    
-    const tl = gsap.timeline({
-      onComplete: () => {
-        typewriteContent();
-      }
-    });
+  // Show the overlay immediately
+  letterOverlay.classList.add("active");
+  
+  // Clear any previous inline styles to prevent animation conflicts
+  gsap.killTweensOf([letterOverlay, letterCard]);
+  
+  // Calculate relative coordinate offsets to slide out from the envelope
+  const envRect = envelope.getBoundingClientRect();
+  const cardRect = letterCard.getBoundingClientRect();
 
-    // 1. Smoothly fade in overlay backdrop
-    tl.fromTo(letterOverlay, 
-      { opacity: 0 }, 
-      { opacity: 1, duration: 0.45, ease: "power2.out" }
-    );
+  const deltaX = (envRect.left + envRect.width / 2) - (cardRect.left + cardRect.width / 2);
+  const deltaY = (envRect.top + envRect.height / 2) - (cardRect.top + cardRect.height / 2);
 
-    // 2. Fly letter card from bottom center with 3D perspective tilt & bouncy landing
-    tl.fromTo(letterCard,
-      { 
-        opacity: 0, 
-        y: 300, 
-        scale: 0.4, 
-        rotation: -10, 
-        rotationX: 35, 
-        transformPerspective: 1200 
-      },
-      { 
-        opacity: 1, 
-        y: 0, 
-        scale: 1, 
-        rotation: 0, 
-        rotationX: 0, 
-        duration: 0.95, 
-        ease: "back.out(1.4)" 
-      },
-      "-=0.3"
-    );
-  }, 850);
+  const tl = gsap.timeline({
+    onComplete: () => {
+      typewriteContent();
+    }
+  });
+
+  // 1. Smoothly fade in overlay backdrop
+  tl.fromTo(letterOverlay, 
+    { opacity: 0 }, 
+    { opacity: 1, duration: 0.7, ease: "power2.out" }
+  );
+
+  // 2. Fly letter card from inside the envelope to the center immediately
+  tl.fromTo(letterCard,
+    { 
+      opacity: 0, 
+      x: deltaX,
+      y: deltaY + 30, // Offset slightly lower to emerge from inside the envelope pocket
+      scale: 0.1, 
+      rotation: -10, 
+      rotationX: 30, 
+      transformPerspective: 1200 
+    },
+    { 
+      opacity: 1, 
+      x: 0,
+      y: 0, 
+      scale: 1, 
+      rotation: 0, 
+      rotationX: 0, 
+      duration: 1.1, 
+      ease: "power4.out" 
+    },
+    "-=0.7" // Start at the same time as the backdrop fade-in for 0 delay
+  );
 }
 
 function closeLetterEnvelope() {
@@ -1686,8 +1849,8 @@ function closeLetterEnvelope() {
     ease: "power2.in",
     onComplete: () => {
       letterOverlay.classList.remove("active");
-      // Reset inline variables for next entrance
-      gsap.set(letterCard, { y: 0, scale: 1, rotation: 0, opacity: 1 });
+      // Reset inline variables for next entrance (including x offset)
+      gsap.set(letterCard, { x: 0, y: 0, scale: 1, rotation: 0, opacity: 1 });
     }
   });
 }

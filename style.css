@@ -767,36 +767,36 @@ html, body {
 
 .dedication-leaf-inline {
   position: absolute;
-  width: 170px; /* Large leaf size matching user screenshot */
+  width: 280px; /* Enlarge leaf width to 280px */
   height: auto;
-  opacity: 0.85;
+  opacity: 0.9; /* High opacity, clean line look */
   pointer-events: none;
-  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.15));
+  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2));
   transition: var(--transition-smooth);
 }
 
 .dedication-leaf-inline.leaf-left {
-  right: calc(100% + 24px);
+  right: calc(100% + 30px); /* Slightly increased spacing for larger leaf */
   top: 50%;
-  transform: translateY(-50%) scaleX(-1) rotate(12deg);
+  transform: translateY(-50%) scaleX(-1) rotate(10deg);
   animation: swayLeafLeft 6s infinite ease-in-out alternate;
 }
 
 .dedication-leaf-inline.leaf-right {
-  left: calc(100% + 24px);
+  left: calc(100% + 30px);
   top: 50%;
-  transform: translateY(-50%) rotate(-12deg);
+  transform: translateY(-50%) rotate(-10deg);
   animation: swayLeafRight 6s infinite ease-in-out alternate;
 }
 
 @keyframes swayLeafLeft {
-  0% { transform: translateY(-50%) scaleX(-1) rotate(12deg); }
-  100% { transform: translateY(-47%) scaleX(-1) rotate(17deg); }
+  0% { transform: translateY(-50%) scaleX(-1) rotate(10deg); }
+  100% { transform: translateY(-48%) scaleX(-1) rotate(15deg); }
 }
 
 @keyframes swayLeafRight {
-  0% { transform: translateY(-50%) rotate(-12deg); }
-  100% { transform: translateY(-53%) rotate(-17deg); }
+  0% { transform: translateY(-50%) rotate(-10deg); }
+  100% { transform: translateY(-48%) rotate(-15deg); }
 }
 
 .dedication-name {
@@ -1635,7 +1635,7 @@ html, body {
   }
 
   .dedication-leaf-inline {
-    width: 100px;
+    width: 160px; /* Enlarge from 100px to 160px */
     opacity: 0.8;
   }
   .dedication-leaf-inline.leaf-left {
@@ -1844,7 +1844,7 @@ html, body {
   }
 
   .dedication-leaf-inline {
-    width: 60px;
+    width: 100px; /* Enlarge from 60px to 100px */
     opacity: 0.75;
   }
   .dedication-leaf-inline.leaf-left {

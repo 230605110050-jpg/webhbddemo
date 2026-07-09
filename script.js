@@ -1007,6 +1007,11 @@ const SFX = {
 const canvas = document.getElementById("globalCanvas");
 const ctx = canvas.getContext("2d");
 
+// Local canvas variables for gallery modal flower burst
+const galleryCanvas = document.getElementById("galleryCanvas");
+let galleryCtx = null;
+let galleryParticles = [];
+
 let stars = [];
 let particles = [];
 let shootingStars = [];
@@ -1148,6 +1153,10 @@ function initConstellations() {
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  if (galleryCanvas) {
+    galleryCanvas.width = window.innerWidth;
+    galleryCanvas.height = window.innerHeight;
+  }
   initStars();
   initConstellations();
 }
@@ -1452,6 +1461,44 @@ function animateCanvas() {
 
       ctx.restore();
     });
+  }
+
+  // Draw Gallery Modal Particles
+  if (galleryCanvas && galleryCtx && galleryParticles.length > 0) {
+    galleryCtx.clearRect(0, 0, galleryCanvas.width, galleryCanvas.height);
+    for (let i = galleryParticles.length - 1; i >= 0; i--) {
+      const p = galleryParticles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha += p.decay;
+
+      if (p.gravity) p.vy += p.gravity;
+      p.vx *= p.drag || 1;
+      p.vy *= p.drag || 1;
+
+      if (p.rotation !== undefined) {
+        p.rotation += p.rotationSpeed;
+      }
+
+      if (p.alpha <= 0) {
+        galleryParticles.splice(i, 1);
+        continue;
+      }
+
+      galleryCtx.save();
+      galleryCtx.globalAlpha = p.alpha;
+      galleryCtx.translate(p.x, p.y);
+      if (p.rotation !== undefined) {
+        galleryCtx.rotate(p.rotation);
+      }
+
+      if (p.type === "png-flower") {
+        if (p.img && p.img.complete) {
+          galleryCtx.drawImage(p.img, -p.size / 2, -p.size / 2, p.size, p.size);
+        }
+      }
+      galleryCtx.restore();
+    }
   }
 
   requestAnimationFrame(animateCanvas);
@@ -2678,6 +2725,14 @@ function init() {
       zoomCaption.innerHTML = captionText;
       galleryOverlay.classList.add("active");
       SFX.playPop();
+
+      // Trigger the flower burst from behind the card after transition completes
+      setTimeout(() => {
+        const cardRect = zoomMediaContainer.parentElement.getBoundingClientRect();
+        const centerX = cardRect.left + cardRect.width / 2;
+        const topY = cardRect.top;
+        triggerGalleryFlowerBurst(centerX, topY);
+      }, 350); // 350ms delay aligned with the CSS scale-up transition
     });
   });
 
@@ -2686,6 +2741,13 @@ function init() {
     if (!galleryOverlay.classList.contains("active")) return;
     galleryOverlay.classList.remove("active");
     SFX.playWhoosh();
+    
+    // Clear modal particles immediately
+    galleryParticles = [];
+    if (galleryCtx && galleryCanvas) {
+      galleryCtx.clearRect(0, 0, galleryCanvas.width, galleryCanvas.height);
+    }
+
     // Stop any playing video after transition
     setTimeout(() => {
       zoomMediaContainer.innerHTML = "";
@@ -2863,6 +2925,38 @@ function drawTextWithLineWrapping(ctx, text, x, y, maxWidth, lineHeight) {
     }
     ctx.fillText(line, x, currentY);
     currentY += lineHeight;
+  }
+}
+
+// Trigger Gallery Modal Flower Burst from behind the zoom card
+function triggerGalleryFlowerBurst(sourceX, sourceY) {
+  if (!galleryCanvas) return;
+  if (!galleryCtx) {
+    galleryCtx = galleryCanvas.getContext("2d");
+  }
+
+  // Spawn flowers shooting upwards from behind the card
+  const count = 70;
+  for (let i = 0; i < count; i++) {
+    const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.8; // directed upwards in a wide fan
+    const speed = Math.random() * 10 + 4; // speed of the shoot
+    const imgIndex = Math.floor(Math.random() * flowerImages.length);
+
+    galleryParticles.push({
+      x: sourceX + (Math.random() - 0.5) * 60, // spread horizontally slightly across the top of the card
+      y: sourceY + 15, // slightly down from the top edge to look like it emerges from behind the card
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1, // upward boost
+      size: Math.random() * 25 + 12, // flower size
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.08,
+      type: "png-flower",
+      img: flowerImages[imgIndex],
+      alpha: 1.0,
+      decay: Math.random() * -0.003 - 0.002, // fades out slowly as it falls
+      drag: 0.97,
+      gravity: 0.08 + Math.random() * 0.04 // falls down under gravity
+    });
   }
 }
 

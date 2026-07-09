@@ -452,8 +452,10 @@
 
   <!-- Fullscreen Gallery Polaroid Zoom Overlay -->
   <div class="gallery-overlay" id="galleryOverlay">
-    <button class="close-gallery-btn" id="closeGallery">&times;</button>
-    <div class="glass-card-zoom">
+    <!-- Local canvas for flower burst behind zoom card -->
+    <canvas id="galleryCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;"></canvas>
+    <button class="close-gallery-btn" id="closeGallery" style="z-index: 10;">&times;</button>
+    <div class="glass-card-zoom" style="position: relative; z-index: 5;">
       <div class="zoom-media-container" id="zoomMediaContainer">
         <!-- Injected img or video goes here -->
       </div>

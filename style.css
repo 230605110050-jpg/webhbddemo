@@ -759,39 +759,44 @@ html, body {
   margin-bottom: 12px;
 }
 
-.dedication-leaf {
+.dedication-name-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 24px;
+}
+
+.dedication-leaf-inline {
   position: absolute;
-  width: 240px; /* Large, premium leaf size! */
+  width: 170px; /* Large leaf size matching user screenshot */
   height: auto;
-  opacity: 0.25; /* Soft background look */
+  opacity: 0.85;
   pointer-events: none;
-  z-index: 5;
-  filter: drop-shadow(0 0 15px rgba(167, 243, 208, 0.22));
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.15));
   transition: var(--transition-smooth);
 }
 
-.dedication-leaf.leaf-left {
-  top: 18%;
-  left: -50px;
-  transform: scaleX(-1) rotate(15deg);
-  animation: floatLeafLeft 8s infinite ease-in-out alternate;
+.dedication-leaf-inline.leaf-left {
+  right: calc(100% + 24px);
+  top: 50%;
+  transform: translateY(-50%) scaleX(-1) rotate(12deg);
+  animation: swayLeafLeft 6s infinite ease-in-out alternate;
 }
 
-.dedication-leaf.leaf-right {
-  bottom: 18%;
-  right: -50px;
-  transform: rotate(-15deg);
-  animation: floatLeafRight 8s infinite ease-in-out alternate;
+.dedication-leaf-inline.leaf-right {
+  left: calc(100% + 24px);
+  top: 50%;
+  transform: translateY(-50%) rotate(-12deg);
+  animation: swayLeafRight 6s infinite ease-in-out alternate;
 }
 
-@keyframes floatLeafLeft {
-  0% { transform: scaleX(-1) rotate(15deg) translateY(0); }
-  100% { transform: scaleX(-1) rotate(22deg) translateY(-15px); }
+@keyframes swayLeafLeft {
+  0% { transform: translateY(-50%) scaleX(-1) rotate(12deg); }
+  100% { transform: translateY(-47%) scaleX(-1) rotate(17deg); }
 }
 
-@keyframes floatLeafRight {
-  0% { transform: rotate(-15deg) translateY(0); }
-  100% { transform: rotate(-22deg) translateY(15px); }
+@keyframes swayLeafRight {
+  0% { transform: translateY(-50%) rotate(-12deg); }
+  100% { transform: translateY(-53%) rotate(-17deg); }
 }
 
 .dedication-name {
@@ -1629,15 +1634,15 @@ html, body {
     height: 120px;
   }
 
-  .dedication-leaf {
-    width: 150px; /* Scaled down on tablets */
-    opacity: 0.15; /* Softer layout presence */
+  .dedication-leaf-inline {
+    width: 100px;
+    opacity: 0.8;
   }
-  .dedication-leaf.leaf-left {
-    left: -40px;
+  .dedication-leaf-inline.leaf-left {
+    right: calc(100% + 15px);
   }
-  .dedication-leaf.leaf-right {
-    right: -40px;
+  .dedication-leaf-inline.leaf-right {
+    left: calc(100% + 15px);
   }
 
   .dedication-name {
@@ -1838,17 +1843,15 @@ html, body {
     height: 240px;
   }
 
-  .dedication-leaf {
-    width: 100px; /* Even smaller on mobile */
-    opacity: 0.1; /* Very soft presence */
+  .dedication-leaf-inline {
+    width: 60px;
+    opacity: 0.75;
   }
-  .dedication-leaf.leaf-left {
-    left: -35px;
-    top: 10%;
+  .dedication-leaf-inline.leaf-left {
+    right: calc(100% + 10px);
   }
-  .dedication-leaf.leaf-right {
-    right: -35px;
-    bottom: 10%;
+  .dedication-leaf-inline.leaf-right {
+    left: calc(100% + 10px);
   }
 
   .envelope-glow {

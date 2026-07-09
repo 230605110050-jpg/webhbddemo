@@ -164,19 +164,10 @@ function navigateToSlide(targetIndex) {
 // Custom animations based on page activation (utilizing fromTo to reset states reliably)
 function triggerPageAnimations(slideIndex) {
   if (slideIndex === 1) {
-    // Dedication Page - Animate dedication title
-    gsap.fromTo(".dedication-name",
+    // Dedication Page - Animate dedication title wrapper (fades and bounces name and inline leaves together)
+    gsap.fromTo(".dedication-name-wrapper",
       { opacity: 0, scale: 0.8, y: 20 },
       { opacity: 1, scale: 1, y: 0, duration: 1.0, ease: "back.out(1.2)" }
-    );
-    // Slide in the large decorative background leaves
-    gsap.fromTo(".dedication-leaf.leaf-left",
-      { opacity: 0, x: -100 },
-      { opacity: 1, x: 0, duration: 1.4, ease: "power3.out", clearProps: "opacity" }
-    );
-    gsap.fromTo(".dedication-leaf.leaf-right",
-      { opacity: 0, x: 100 },
-      { opacity: 1, x: 0, duration: 1.4, ease: "power3.out", clearProps: "opacity" }
     );
   } else if (slideIndex === 2) {
     // Milestones Slide - Animate Counter cards
@@ -2605,9 +2596,21 @@ function init() {
     el.textContent = `Happy Birthday, ${CONFIG.recipientName}!`;
   });
 
-  // Set recipient name in dedication pre-titles
+  // Set recipient name in dedication pre-titles (preserving the 2-line layout)
   const dedicationName = document.querySelector(".dedication-name");
-  if (dedicationName) dedicationName.textContent = CONFIG.recipientName;
+  if (dedicationName) {
+    if (CONFIG.recipientName === "Cantika Melati Nugraini") {
+      dedicationName.innerHTML = "Cantika Melati<br>Nugraini";
+    } else {
+      const words = CONFIG.recipientName.split(" ");
+      if (words.length > 2) {
+        const lastWord = words.pop();
+        dedicationName.innerHTML = words.join(" ") + "<br>" + lastWord;
+      } else {
+        dedicationName.textContent = CONFIG.recipientName;
+      }
+    }
+  }
 
   // Set recipient name dynamically on landing page
   const landingSubtitle = document.querySelector(".landing-subtitle");

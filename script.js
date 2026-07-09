@@ -2615,9 +2615,9 @@ function init() {
     }
   });
 
-  // Parse and set recipient name
+  // Parse and set recipient name with styled dynamic wrapping
   document.querySelectorAll(".final-heading").forEach(el => {
-    el.textContent = `Happy Birthday, ${CONFIG.recipientName}!`;
+    el.innerHTML = `Happy Birthday,<br><span class="final-name">${CONFIG.recipientName}</span>!`;
   });
 
   // Set recipient name in dedication pre-titles (preserving the 2-line layout)

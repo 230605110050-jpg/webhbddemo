@@ -1127,21 +1127,45 @@ class Constellation {
 let constellations = [];
 let lastFrameTime = performance.now();
 
+// Helper to find a random position for background constellations avoiding the center
+function getRandomPositionAvoidingCenter() {
+  let cx, cy;
+  let attempts = 0;
+  
+  while (attempts < 50) {
+    cx = Math.random() * canvas.width;
+    cy = Math.random() * canvas.height;
+    
+    // Avoid horizontal middle 40% (between 30% and 70%) and vertical middle 50% (between 25% and 75%)
+    const inHorizontalCenter = cx > canvas.width * 0.3 && cx < canvas.width * 0.7;
+    const inVerticalCenter = cy > canvas.height * 0.25 && cy < canvas.height * 0.75;
+    
+    if (!(inHorizontalCenter && inVerticalCenter)) {
+      break;
+    }
+    attempts++;
+  }
+  
+  // Padding from screen borders
+  cx = Math.max(80, Math.min(canvas.width - 80, cx));
+  cy = Math.max(80, Math.min(canvas.height - 80, cy));
+  
+  return { x: cx, y: cy };
+}
+
 function spawnNewConstellation() {
-  const cx = Math.random() * (canvas.width * 0.7) + canvas.width * 0.15;
-  const cy = Math.random() * (canvas.height * 0.6) + canvas.height * 0.2;
+  const pos = getRandomPositionAvoidingCenter();
   const numStars = Math.floor(Math.random() * 4) + 5; // 5 to 8 stars
-  constellations.push(new Constellation(cx, cy, numStars));
+  constellations.push(new Constellation(pos.x, pos.y, numStars));
 }
 
 function initConstellations() {
   constellations = [];
   const maxConstellations = Math.min(3, Math.max(1, Math.floor(canvas.width / 500)));
   for (let i = 0; i < maxConstellations; i++) {
-    const cx = Math.random() * (canvas.width * 0.7) + canvas.width * 0.15;
-    const cy = Math.random() * (canvas.height * 0.6) + canvas.height * 0.2;
+    const pos = getRandomPositionAvoidingCenter();
     const numStars = Math.floor(Math.random() * 4) + 5;
-    const constel = new Constellation(cx, cy, numStars);
+    const constel = new Constellation(pos.x, pos.y, numStars);
     // Stagger initial states
     constel.alpha = Math.random() * constel.maxAlpha;
     constel.state = Math.random() < 0.5 ? "fadeIn" : "static";

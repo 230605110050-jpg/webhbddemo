@@ -164,8 +164,8 @@ function navigateToSlide(targetIndex) {
 // Custom animations based on page activation (utilizing fromTo to reset states reliably)
 function triggerPageAnimations(slideIndex) {
   if (slideIndex === 1) {
-    // Dedication Page - Animate dedication title
-    gsap.fromTo(".dedication-name",
+    // Dedication Page - Animate dedication title and leaves container
+    gsap.fromTo(".name-container",
       { opacity: 0, scale: 0.8, y: 20 },
       { opacity: 1, scale: 1, y: 0, duration: 1.0, ease: "back.out(1.2)" }
     );
@@ -588,10 +588,10 @@ let originalVolumeBeforeFade = null;
 
 function fadeOutAndPauseMusic(durationMs = 5000) {
   if (fadeInterval) clearInterval(fadeInterval);
-  
+
   const startVolume = audioEl.volume;
   originalVolumeBeforeFade = globalVolume;
-  
+
   const intervalTime = 100;
   const steps = durationMs / intervalTime;
   let currentStep = 0;
@@ -600,7 +600,7 @@ function fadeOutAndPauseMusic(durationMs = 5000) {
     currentStep++;
     const fraction = 1 - (currentStep / steps);
     const newVolume = Math.max(0, startVolume * fraction);
-    
+
     audioEl.volume = newVolume;
     globalVolume = newVolume;
 
@@ -608,7 +608,7 @@ function fadeOutAndPauseMusic(durationMs = 5000) {
       clearInterval(fadeInterval);
       fadeInterval = null;
       pauseMusic();
-      
+
       // Restore volume settings for future playback
       audioEl.volume = originalVolumeBeforeFade;
       globalVolume = originalVolumeBeforeFade;
@@ -1166,7 +1166,7 @@ window.addEventListener("resize", resizeCanvas);
 function initStars() {
   stars = [];
   const starCount = Math.floor((canvas.width * canvas.height) / 7000);
-  
+
   const starColors = [
     "rgba(255, 255, 255, ",   // Pure white
     "rgba(254, 240, 138, ",   // Soft yellow
@@ -1829,10 +1829,10 @@ function openLetterEnvelope() {
 
   // Show the overlay immediately
   letterOverlay.classList.add("active");
-  
+
   // Clear any previous inline styles to prevent animation conflicts
   gsap.killTweensOf([letterOverlay, letterCard]);
-  
+
   // Calculate relative coordinate offsets to slide out from the envelope
   const envRect = envelope.getBoundingClientRect();
   const cardRect = letterCard.getBoundingClientRect();
@@ -1847,31 +1847,31 @@ function openLetterEnvelope() {
   });
 
   // 1. Smoothly fade in overlay backdrop
-  tl.fromTo(letterOverlay, 
-    { opacity: 0 }, 
+  tl.fromTo(letterOverlay,
+    { opacity: 0 },
     { opacity: 1, duration: 0.7, ease: "power2.out" }
   );
 
   // 2. Fly letter card from inside the envelope to the center immediately
   tl.fromTo(letterCard,
-    { 
-      opacity: 0, 
+    {
+      opacity: 0,
       x: deltaX,
       y: deltaY + 30, // Offset slightly lower to emerge from inside the envelope pocket
-      scale: 0.1, 
-      rotation: -10, 
-      rotationX: 30, 
-      transformPerspective: 1200 
+      scale: 0.1,
+      rotation: -10,
+      rotationX: 30,
+      transformPerspective: 1200
     },
-    { 
-      opacity: 1, 
+    {
+      opacity: 1,
       x: 0,
-      y: 0, 
-      scale: 1, 
-      rotation: 0, 
-      rotationX: 0, 
-      duration: 1.1, 
-      ease: "power4.out" 
+      y: 0,
+      scale: 1,
+      rotation: 0,
+      rotationX: 0,
+      duration: 1.1,
+      ease: "power4.out"
     },
     "-=0.7" // Start at the same time as the backdrop fade-in for 0 delay
   );
@@ -2047,27 +2047,27 @@ function blowCandleOut() {
 
       // Reveal Final Message with stunning 3D flip-up and staggering element build
       finalMessage.style.display = "block";
-      
+
       const wishTl = gsap.timeline();
-      
+
       wishTl.fromTo(finalMessage,
-        { 
-          opacity: 0, 
-          y: 120, 
-          scale: 0.75, 
-          rotationX: -45, 
-          transformPerspective: 1000 
+        {
+          opacity: 0,
+          y: 120,
+          scale: 0.75,
+          rotationX: -45,
+          transformPerspective: 1000
         },
-        { 
-          opacity: 1, 
-          y: 0, 
-          scale: 1, 
-          rotationX: 0, 
-          duration: 1.25, 
-          ease: "back.out(1.4)" 
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          rotationX: 0,
+          duration: 1.25,
+          ease: "back.out(1.4)"
         }
       );
-      
+
       // Stagger child elements inside finalMessage for a cohesive build
       wishTl.fromTo("#finalMessage .final-heading",
         { opacity: 0, y: -25 },
@@ -2089,7 +2089,7 @@ function blowCandleOut() {
 
       // Emit continuous float particles at the end
       triggerContinuousConfetti();
-      
+
       // Start flower patterns sequence
       triggerFlowerPatternsSequence();
     }
@@ -2146,81 +2146,81 @@ let patternInterval = null;
 
 const glyphs = {
   'I': [
-    {x: -1, y: -2}, {x: 0, y: -2}, {x: 1, y: -2},
-    {x: 0, y: -1},
-    {x: 0, y: 0},
-    {x: 0, y: 1},
-    {x: -1, y: 2}, {x: 0, y: 2}, {x: 1, y: 2}
+    { x: -1, y: -2 }, { x: 0, y: -2 }, { x: 1, y: -2 },
+    { x: 0, y: -1 },
+    { x: 0, y: 0 },
+    { x: 0, y: 1 },
+    { x: -1, y: 2 }, { x: 0, y: 2 }, { x: 1, y: 2 }
   ],
   'L': [
-    {x: -1, y: -2},
-    {x: -1, y: -1},
-    {x: -1, y: 0},
-    {x: -1, y: 1},
-    {x: -1, y: 2}, {x: 0, y: 2}, {x: 1, y: 2}
+    { x: -1, y: -2 },
+    { x: -1, y: -1 },
+    { x: -1, y: 0 },
+    { x: -1, y: 1 },
+    { x: -1, y: 2 }, { x: 0, y: 2 }, { x: 1, y: 2 }
   ],
   'O': [
-    {x: -1, y: -2}, {x: 0, y: -2}, {x: 1, y: -2},
-    {x: -1.5, y: -1}, {x: 1.5, y: -1},
-    {x: -1.5, y: 0}, {x: 1.5, y: 0},
-    {x: -1.5, y: 1}, {x: 1.5, y: 1},
-    {x: -1, y: 2}, {x: 0, y: 2}, {x: 1, y: 2}
+    { x: -1, y: -2 }, { x: 0, y: -2 }, { x: 1, y: -2 },
+    { x: -1.5, y: -1 }, { x: 1.5, y: -1 },
+    { x: -1.5, y: 0 }, { x: 1.5, y: 0 },
+    { x: -1.5, y: 1 }, { x: 1.5, y: 1 },
+    { x: -1, y: 2 }, { x: 0, y: 2 }, { x: 1, y: 2 }
   ],
   'V': [
-    {x: -2, y: -2}, {x: 2, y: -2},
-    {x: -1.5, y: -1}, {x: 1.5, y: -1},
-    {x: -1, y: 0}, {x: 1, y: 0},
-    {x: -0.5, y: 1}, {x: 0.5, y: 1},
-    {x: 0, y: 2}
+    { x: -2, y: -2 }, { x: 2, y: -2 },
+    { x: -1.5, y: -1 }, { x: 1.5, y: -1 },
+    { x: -1, y: 0 }, { x: 1, y: 0 },
+    { x: -0.5, y: 1 }, { x: 0.5, y: 1 },
+    { x: 0, y: 2 }
   ],
   'E': [
-    {x: -1, y: -2}, {x: 0, y: -2}, {x: 1, y: -2},
-    {x: -1, y: -1},
-    {x: -1, y: 0}, {x: 0, y: 0}, {x: 1, y: 0},
-    {x: -1, y: 1},
-    {x: -1, y: 2}, {x: 0, y: 2}, {x: 1, y: 2}
+    { x: -1, y: -2 }, { x: 0, y: -2 }, { x: 1, y: -2 },
+    { x: -1, y: -1 },
+    { x: -1, y: 0 }, { x: 0, y: 0 }, { x: 1, y: 0 },
+    { x: -1, y: 1 },
+    { x: -1, y: 2 }, { x: 0, y: 2 }, { x: 1, y: 2 }
   ],
   'Y': [
-    {x: -2, y: -2}, {x: 2, y: -2},
-    {x: -1, y: -1}, {x: 1, y: -1},
-    {x: 0, y: 0},
-    {x: 0, y: 1},
-    {x: 0, y: 2}
+    { x: -2, y: -2 }, { x: 2, y: -2 },
+    { x: -1, y: -1 }, { x: 1, y: -1 },
+    { x: 0, y: 0 },
+    { x: 0, y: 1 },
+    { x: 0, y: 2 }
   ],
   'U': [
-    {x: -1.5, y: -2}, {x: 1.5, y: -2},
-    {x: -1.5, y: -1}, {x: 1.5, y: -1},
-    {x: -1.5, y: 0}, {x: 1.5, y: 0},
-    {x: -1.5, y: 1}, {x: 1.5, y: 1},
-    {x: -1, y: 2}, {x: 0, y: 2}, {x: 1, y: 2}
+    { x: -1.5, y: -2 }, { x: 1.5, y: -2 },
+    { x: -1.5, y: -1 }, { x: 1.5, y: -1 },
+    { x: -1.5, y: 0 }, { x: 1.5, y: 0 },
+    { x: -1.5, y: 1 }, { x: 1.5, y: 1 },
+    { x: -1, y: 2 }, { x: 0, y: 2 }, { x: 1, y: 2 }
   ],
   'A': [
-    {x: 0, y: -2},
-    {x: -0.5, y: -1}, {x: 0.5, y: -1},
-    {x: -1, y: 0}, {x: 0, y: 0}, {x: 1, y: 0},
-    {x: -1.5, y: 1}, {x: 1.5, y: 1},
-    {x: -2, y: 2}, {x: 2, y: 2}
+    { x: 0, y: -2 },
+    { x: -0.5, y: -1 }, { x: 0.5, y: -1 },
+    { x: -1, y: 0 }, { x: 0, y: 0 }, { x: 1, y: 0 },
+    { x: -1.5, y: 1 }, { x: 1.5, y: 1 },
+    { x: -2, y: 2 }, { x: 2, y: 2 }
   ],
   'C': [
-    {x: 0, y: -2}, {x: 1, y: -2},
-    {x: -1, y: -1},
-    {x: -1, y: 0},
-    {x: -1, y: 1},
-    {x: 0, y: 2}, {x: 1, y: 2}
+    { x: 0, y: -2 }, { x: 1, y: -2 },
+    { x: -1, y: -1 },
+    { x: -1, y: 0 },
+    { x: -1, y: 1 },
+    { x: 0, y: 2 }, { x: 1, y: 2 }
   ],
   'N': [
-    {x: -1.5, y: -2}, {x: 1.5, y: -2},
-    {x: -1.5, y: -1}, {x: -0.5, y: -1}, {x: 1.5, y: -1},
-    {x: -1.5, y: 0}, {x: 0.5, y: 0}, {x: 1.5, y: 0},
-    {x: -1.5, y: 1}, {x: 1.5, y: 1},
-    {x: -1.5, y: 2}, {x: 1.5, y: 2}
+    { x: -1.5, y: -2 }, { x: 1.5, y: -2 },
+    { x: -1.5, y: -1 }, { x: -0.5, y: -1 }, { x: 1.5, y: -1 },
+    { x: -1.5, y: 0 }, { x: 0.5, y: 0 }, { x: 1.5, y: 0 },
+    { x: -1.5, y: 1 }, { x: 1.5, y: 1 },
+    { x: -1.5, y: 2 }, { x: 1.5, y: 2 }
   ],
   'K': [
-    {x: -1.2, y: -2}, {x: 1.2, y: -2},
-    {x: -1.2, y: -1}, {x: 0.2, y: -1},
-    {x: -1.2, y: 0}, {x: -0.5, y: 0},
-    {x: -1.2, y: 1}, {x: 0.2, y: 1},
-    {x: -1.2, y: 2}, {x: 1.2, y: 2}
+    { x: -1.2, y: -2 }, { x: 1.2, y: -2 },
+    { x: -1.2, y: -1 }, { x: 0.2, y: -1 },
+    { x: -1.2, y: 0 }, { x: -0.5, y: 0 },
+    { x: -1.2, y: 1 }, { x: 0.2, y: 1 },
+    { x: -1.2, y: 2 }, { x: 1.2, y: 2 }
   ]
 };
 
@@ -2232,7 +2232,7 @@ function spawnHeartPattern(cx, cy, scale) {
   for (let i = 0; i < count; i++) {
     const t = (i / count) * Math.PI * 2;
     const x = 16 * Math.pow(Math.sin(t), 3);
-    const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+    const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
     points.push({ x: x * finalScale, y: y * finalScale });
   }
 
@@ -2291,7 +2291,7 @@ function spawnIHeartUPattern(cx, cy) {
   for (let i = 0; i < heartCount; i++) {
     const t = (i / heartCount) * Math.PI * 2;
     const x = 16 * Math.pow(Math.sin(t), 3);
-    const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+    const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
     heartPoints.push({ x: x * heartScale, y: y * heartScale });
   }
   heartPoints.forEach(pt => {
@@ -2374,11 +2374,11 @@ function spawnLovePattern(cx, cy) {
 function spawnNamePattern(cx, cy) {
   const firstName = CONFIG.recipientName.split(" ")[0].toUpperCase();
   const isMobile = canvas.width < 600;
-  
+
   const charCount = firstName.length;
   const spacing = isMobile ? Math.min(35, canvas.width / (charCount + 1)) : 70;
   const scale = isMobile ? 7 : 12; // smaller scale for longer word
-  
+
   const totalWidth = (charCount - 1) * spacing;
   const startX = cx - totalWidth / 2;
 
@@ -2489,8 +2489,8 @@ function isClickableElement(el) {
     }
     // Specific check for classes we know are clickable
     if (current.classList && (
-      current.classList.contains('polaroid-frame') || 
-      current.classList.contains('dot') || 
+      current.classList.contains('polaroid-frame') ||
+      current.classList.contains('dot') ||
       current.classList.contains('gift-container') ||
       current.classList.contains('envelope') ||
       current.classList.contains('music-btn') ||
@@ -2732,7 +2732,7 @@ function init() {
         const centerX = cardRect.left + cardRect.width / 2;
         const topY = cardRect.top;
         triggerGalleryFlowerBurst(centerX, topY);
-      }, 350); // 350ms delay aligned with the CSS scale-up transition
+      },); // 350ms delay aligned with the CSS scale-up transition
     });
   });
 
@@ -2741,7 +2741,7 @@ function init() {
     if (!galleryOverlay.classList.contains("active")) return;
     galleryOverlay.classList.remove("active");
     SFX.playWhoosh();
-    
+
     // Clear modal particles immediately
     galleryParticles = [];
     if (galleryCtx && galleryCanvas) {
@@ -2786,7 +2786,7 @@ function init() {
         clearTimeout(musicStopTimeout);
         musicStopTimeout = null;
       }
-      
+
       cancelMusicFade();
 
       // Clear flower patterns interval if user replays
@@ -2817,21 +2817,21 @@ function init() {
 function downloadLetterAsImage() {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
-  
+
   // High resolution size
   canvas.width = 800;
   canvas.height = 1000;
-  
+
   const w = canvas.width;
   const h = canvas.height;
-  
+
   // 1. Draw beautiful dark background gradient matching the web app theme
   const grad = ctx.createLinearGradient(0, 0, 0, h);
   grad.addColorStop(0, "#110f33");
   grad.addColorStop(1, "#060913");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, w, h);
-  
+
   // 2. Draw subtle star-field overlay on background for premium feel
   ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
   for (let i = 0; i < 40; i++) {
@@ -2842,26 +2842,26 @@ function downloadLetterAsImage() {
     ctx.arc(starX, starY, starSize, 0, Math.PI * 2);
     ctx.fill();
   }
-  
+
   // 3. Draw elegant gold border frame
   ctx.strokeStyle = "rgba(229, 193, 88, 0.3)";
   ctx.lineWidth = 4;
   ctx.strokeRect(30, 30, w - 60, h - 60);
-  
+
   ctx.strokeStyle = "rgba(229, 193, 88, 0.15)";
   ctx.lineWidth = 1;
   ctx.strokeRect(36, 36, w - 72, h - 72);
-  
+
   // 4. Draw Title
   const firstName = CONFIG.recipientName.split(" ")[0];
   const titleText = `Selamat Ulang Tahun, ${firstName}`;
-  
+
   ctx.textAlign = "center";
   ctx.fillStyle = "#e5c158"; // Gold color
-  
+
   ctx.font = "italic bold 38px 'Playfair Display', 'Georgia', serif";
   ctx.fillText(titleText, w / 2, 95);
-  
+
   // Subtle divider line
   ctx.strokeStyle = "rgba(229, 193, 88, 0.2)";
   ctx.lineWidth = 1;
@@ -2869,26 +2869,26 @@ function downloadLetterAsImage() {
   ctx.moveTo(w / 2 - 120, 125);
   ctx.lineTo(w / 2 + 120, 125);
   ctx.stroke();
-  
+
   // 5. Draw Letter Body
   ctx.textAlign = "left";
   ctx.fillStyle = "#f3f4f6"; // bright white
-  
+
   ctx.font = "italic 24px 'Dancing Script', 'Georgia', cursive";
-  
+
   const startX = 75;
   const startY = 185;
   const maxTextWidth = w - 150;
   const lineHeight = 38;
-  
+
   drawTextWithLineWrapping(ctx, CONFIG.letterText, startX, startY, maxTextWidth, lineHeight);
-  
+
   // 6. Draw footer note
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
   ctx.font = "14px 'Poppins', 'sans-serif'";
   ctx.fillText("Dikirim dengan cinta dari website ulang tahun interaktif Anda ❤️", w / 2, h - 55);
-  
+
   // 7. Trigger file download
   const link = document.createElement("a");
   link.download = `Surat_Untuk_${firstName}.png`;
@@ -2900,17 +2900,17 @@ function downloadLetterAsImage() {
 function drawTextWithLineWrapping(ctx, text, x, y, maxWidth, lineHeight) {
   const paragraphs = text.split('\n');
   let currentY = y;
-  
+
   for (let i = 0; i < paragraphs.length; i++) {
     const paragraph = paragraphs[i];
     if (paragraph === "") {
       currentY += lineHeight * 0.7; // Paragraph gap
       continue;
     }
-    
+
     const words = paragraph.split(' ');
     let line = '';
-    
+
     for (let n = 0; n < words.length; n++) {
       const testLine = line + words[n] + ' ';
       const metrics = ctx.measureText(testLine);

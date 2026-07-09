@@ -759,26 +759,39 @@ html, body {
   margin-bottom: 12px;
 }
 
-.name-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 30px;
-  margin-bottom: 24px;
-  width: 100%;
-}
-
-.leaf-decor {
-  width: 70px;
-  height: 56px;
-  object-fit: contain;
-  opacity: 0.85;
-  filter: drop-shadow(0 0 10px rgba(167, 243, 208, 0.3));
+.dedication-leaf {
+  position: absolute;
+  width: 240px; /* Large, premium leaf size! */
+  height: auto;
+  opacity: 0.25; /* Soft background look */
   pointer-events: none;
+  z-index: 5;
+  filter: drop-shadow(0 0 15px rgba(167, 243, 208, 0.22));
+  transition: var(--transition-smooth);
 }
 
-.leaf-left {
-  transform: scaleX(-1);
+.dedication-leaf.leaf-left {
+  top: 18%;
+  left: -50px;
+  transform: scaleX(-1) rotate(15deg);
+  animation: floatLeafLeft 8s infinite ease-in-out alternate;
+}
+
+.dedication-leaf.leaf-right {
+  bottom: 18%;
+  right: -50px;
+  transform: rotate(-15deg);
+  animation: floatLeafRight 8s infinite ease-in-out alternate;
+}
+
+@keyframes floatLeafLeft {
+  0% { transform: scaleX(-1) rotate(15deg) translateY(0); }
+  100% { transform: scaleX(-1) rotate(22deg) translateY(-15px); }
+}
+
+@keyframes floatLeafRight {
+  0% { transform: rotate(-15deg) translateY(0); }
+  100% { transform: rotate(-22deg) translateY(15px); }
 }
 
 .dedication-name {
@@ -787,7 +800,7 @@ html, body {
   font-weight: 700;
   font-style: italic;
   letter-spacing: 0.5px;
-  margin-bottom: 0;
+  margin-bottom: 24px;
   line-height: 1.25;
   color: #ffffff;
   background: linear-gradient(135deg, #ffffff 30%, var(--gold) 100%);
@@ -1616,14 +1629,15 @@ html, body {
     height: 120px;
   }
 
-  .name-container {
-    gap: 15px;
-    margin-bottom: 16px;
+  .dedication-leaf {
+    width: 150px; /* Scaled down on tablets */
+    opacity: 0.15; /* Softer layout presence */
   }
-
-  .leaf-decor {
-    width: 45px;
-    height: 36px;
+  .dedication-leaf.leaf-left {
+    left: -40px;
+  }
+  .dedication-leaf.leaf-right {
+    right: -40px;
   }
 
   .dedication-name {
@@ -1824,14 +1838,17 @@ html, body {
     height: 240px;
   }
 
-  .name-container {
-    gap: 10px;
-    margin-bottom: 12px;
+  .dedication-leaf {
+    width: 100px; /* Even smaller on mobile */
+    opacity: 0.1; /* Very soft presence */
   }
-
-  .leaf-decor {
-    width: 32px;
-    height: 26px;
+  .dedication-leaf.leaf-left {
+    left: -35px;
+    top: 10%;
+  }
+  .dedication-leaf.leaf-right {
+    right: -35px;
+    bottom: 10%;
   }
 
   .envelope-glow {

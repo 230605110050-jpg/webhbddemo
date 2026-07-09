@@ -164,10 +164,19 @@ function navigateToSlide(targetIndex) {
 // Custom animations based on page activation (utilizing fromTo to reset states reliably)
 function triggerPageAnimations(slideIndex) {
   if (slideIndex === 1) {
-    // Dedication Page - Animate dedication title and leaves container
-    gsap.fromTo(".name-container",
+    // Dedication Page - Animate dedication title
+    gsap.fromTo(".dedication-name",
       { opacity: 0, scale: 0.8, y: 20 },
       { opacity: 1, scale: 1, y: 0, duration: 1.0, ease: "back.out(1.2)" }
+    );
+    // Slide in the large decorative background leaves
+    gsap.fromTo(".dedication-leaf.leaf-left",
+      { opacity: 0, x: -100 },
+      { opacity: 1, x: 0, duration: 1.4, ease: "power3.out", clearProps: "opacity" }
+    );
+    gsap.fromTo(".dedication-leaf.leaf-right",
+      { opacity: 0, x: 100 },
+      { opacity: 1, x: 0, duration: 1.4, ease: "power3.out", clearProps: "opacity" }
     );
   } else if (slideIndex === 2) {
     // Milestones Slide - Animate Counter cards

@@ -924,8 +924,8 @@ html, body {
    ========================================================================== */
 .envelope-wrapper {
   position: relative;
-  width: 320px;
-  height: 220px;
+  width: 300px;
+  height: 240px;
   margin: 40px auto;
   perspective: 1000px;
   cursor: pointer;
@@ -935,48 +935,40 @@ html, body {
   position: relative;
   width: 100%;
   height: 100%;
-  background: #be123c; /* Velvet Rose-Red */
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-  transform-style: preserve-3d;
   transition: transform 0.5s;
 }
 
-.envelope .flap {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-  border-left: 160px solid transparent;
-  border-right: 160px solid transparent;
-  border-top: 110px solid #fda4af; /* Soft rose pink */
-  transform-origin: top;
-  z-index: 3;
-  transition: transform 0.5s 0.3s, z-index 0.2s 0.5s;
-}
-
-.envelope .pocket {
+.envelope-img {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: #9f1239; /* Deep Rose-Burgundy */
-  border-radius: 0 0 8px 8px;
-  z-index: 2;
-  clip-path: polygon(0 0, 160px 110px, 320px 0, 320px 220px, 0 220px);
+  object-fit: contain;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  pointer-events: none;
 }
 
-.envelope .letter-mockup {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 300px;
-  height: 100px;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 4px;
-  z-index: 1;
+/* Closed state (default) */
+.envelope-img.open-img {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.envelope-img.closed-img {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Open state (.opened class added to .envelope-wrapper) */
+.envelope-wrapper.opened .envelope-img.open-img {
+  opacity: 1;
+  visibility: visible;
+}
+
+.envelope-wrapper.opened .envelope-img.closed-img {
+  opacity: 0;
+  visibility: hidden;
 }
 
 /* Focused letter overlay modal styling */
@@ -1078,13 +1070,7 @@ html, body {
   letter-spacing: 0.5px;
 }
 
-/* Envelope Interaction Classes */
-.envelope-wrapper.opened .envelope .flap {
-  transform: rotateX(180deg);
-  z-index: 1;
-  border-top-color: #9f1239;
-  transition: transform 0.5s, z-index 0.2s 0.1s;
-}
+
 
 .letter-instruction {
   font-size: 0.85rem;

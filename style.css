@@ -767,31 +767,31 @@ html, body {
 
 .dedication-leaf-inline {
   position: absolute;
-  width: 280px; /* Enlarge leaf width to 280px */
+  width: 340px; /* Enlarge leaf width to 340px for prominent framing */
   height: auto;
-  opacity: 0.9; /* High opacity, clean line look */
+  opacity: 0.95;
   pointer-events: none;
   filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2));
   transition: var(--transition-smooth);
 }
 
 .dedication-leaf-inline.leaf-left {
-  right: calc(100% + 30px); /* Slightly increased spacing for larger leaf */
+  right: calc(100% + 40px); /* Spacing adjusted for larger size */
   top: 50%;
-  transform: translateY(-50%) scaleX(-1) rotate(10deg);
+  transform: translateY(-50%) scaleX(-1) rotate(-10deg); /* Synced to match right leaf rotation exactly */
   animation: swayLeafLeft 6s infinite ease-in-out alternate;
 }
 
 .dedication-leaf-inline.leaf-right {
-  left: calc(100% + 30px);
+  left: calc(100% + 40px);
   top: 50%;
   transform: translateY(-50%) rotate(-10deg);
   animation: swayLeafRight 6s infinite ease-in-out alternate;
 }
 
 @keyframes swayLeafLeft {
-  0% { transform: translateY(-50%) scaleX(-1) rotate(10deg); }
-  100% { transform: translateY(-48%) scaleX(-1) rotate(15deg); }
+  0% { transform: translateY(-50%) scaleX(-1) rotate(-10deg); }
+  100% { transform: translateY(-48%) scaleX(-1) rotate(-15deg); }
 }
 
 @keyframes swayLeafRight {
@@ -1635,14 +1635,14 @@ html, body {
   }
 
   .dedication-leaf-inline {
-    width: 160px; /* Enlarge from 100px to 160px */
+    width: 200px; /* Enlarge further on tablets */
     opacity: 0.8;
   }
   .dedication-leaf-inline.leaf-left {
-    right: calc(100% + 15px);
+    right: calc(100% + 25px);
   }
   .dedication-leaf-inline.leaf-right {
-    left: calc(100% + 15px);
+    left: calc(100% + 25px);
   }
 
   .dedication-name {
@@ -1844,14 +1844,14 @@ html, body {
   }
 
   .dedication-leaf-inline {
-    width: 100px; /* Enlarge from 60px to 100px */
+    width: 120px; /* Enlarge further on mobile */
     opacity: 0.75;
   }
   .dedication-leaf-inline.leaf-left {
-    right: calc(100% + 10px);
+    right: calc(100% + 15px);
   }
   .dedication-leaf-inline.leaf-right {
-    left: calc(100% + 10px);
+    left: calc(100% + 15px);
   }
 
   .envelope-glow {
